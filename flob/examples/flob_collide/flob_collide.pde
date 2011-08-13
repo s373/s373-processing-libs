@@ -44,7 +44,8 @@ void setup(){
   String[] devices = Capture.list();
   println(devices);
 
-  video = new Capture(this, videores, videores,  devices[6], fps);  
+//  video = new Capture(this, videores, videores,  devices[6], fps);  
+  video = new Capture(this, videores, videores, fps);  
   flob = new Flob(video, width, height);
   flob.setMirror(true,false);
   flob.setThresh(12);
