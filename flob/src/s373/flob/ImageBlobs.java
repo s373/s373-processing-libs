@@ -20,9 +20,9 @@ public class ImageBlobs {
 	public int maxpix = 10000;
 	public boolean[] imagemap = null;
 	public boolean imagemaplit = false;
-	public int w, h;
+	public int w, h;// , w2, h2;
 	public float wr, hr;
-	public float wcoordsx, wcoordsy;
+	public float wcoordsx, wcoordsy, w2, h2;
 	public int worldw = 700, worldh = 700;
 	// public boolean coordsmode;
 	public int numpix;
@@ -91,13 +91,18 @@ public class ImageBlobs {
 	void calcdims(int w, int h, int ww, int wh) {
 		this.w = w;
 		this.h = h;
-		wr = 1.0f / (float) w;
-		hr = 1.0f / (float) h;
+		// w2 = w / 2;
+		// h2 = h / 2;
+
+		wr = 1.0f / w;
+		hr = 1.0f / h;
 		numpix = w * h;
 		worldw = ww;
 		worldh = wh;
 		wcoordsx = worldw * wr;
 		wcoordsy = worldh * hr;
+		w2 = worldw / 2;
+		h2 = worldh / 2;
 	}
 
 	void setninpix(int nin) {
@@ -121,7 +126,7 @@ public class ImageBlobs {
 		System.out.print("query blobdata\n");
 		System.out.print("numblobs " + numblobs + "\n");
 		for (int i = 0; i < theblobs.size(); i++) {
-			ABlob b = (ABlob) theblobs.get(i);
+			ABlob b = theblobs.get(i);
 			System.out.print("blob" + b.id + " pix" + b.pixelcount + " coords "
 					+ b.boxminx + " " + b.boxminy + " " + b.boxmaxx + " "
 					+ b.boxmaxy + "  center " + b.boxcenterx + " "
@@ -162,7 +167,7 @@ public class ImageBlobs {
 						b.boxminy = j;
 						b.boxmaxy = j;
 						while (!thecoords.isEmpty()) {
-							p2 = (pt2) thecoords.remove(0);
+							p2 = thecoords.remove(0);
 							if ((p2.x >= 0) && (p2.x < pimage.width)
 									&& (p2.y >= 0) && (p2.y < pimage.height)) {
 								if (imagemap[p2.y * pimage.width + p2.x] == false) {
@@ -199,10 +204,10 @@ public class ImageBlobs {
 							b.boxcentery = (int) ((b.boxminy + b.boxmaxy) * 0.5);
 							b.boxdimx = b.boxmaxx - b.boxminx;
 							b.boxdimy = b.boxmaxy - b.boxminy;
-							b.cx = (float) b.boxcenterx * wcoordsx;
-							b.cy = (float) b.boxcentery * wcoordsy;
-							b.dimx = (float) ((float) (b.boxmaxx - b.boxminx) * wcoordsx);
-							b.dimy = (float) ((float) (b.boxmaxy - b.boxminy) * wcoordsy);
+							b.cx = b.boxcenterx * wcoordsx;
+							b.cy = b.boxcentery * wcoordsy;
+							b.dimx = ((b.boxmaxx - b.boxminx) * wcoordsx);
+							b.dimy = ((b.boxmaxy - b.boxminy) * wcoordsy);
 							if (tflob.getAnyFeatureActive()) {
 								if (tflob.trackfeatures[0])
 									b = calc_feature_head(b);
@@ -256,7 +261,7 @@ public class ImageBlobs {
 						b.boxminy = j;
 						b.boxmaxy = j;
 						while (!thecoords.isEmpty()) {
-							p2 = (pt2) thecoords.remove(0);
+							p2 = thecoords.remove(0);
 							if ((p2.x >= 0) && (p2.x < pimage.width)
 									&& (p2.y >= 0) && (p2.y < pimage.height)) {
 								if (imagemap[p2.y * pimage.width + p2.x] == false) {
@@ -290,8 +295,8 @@ public class ImageBlobs {
 							b.pixelcount = pixelcount;
 							b.boxcenterx = (int) ((b.boxminx + b.boxmaxx) * 0.5);
 							b.boxcentery = (int) ((b.boxminy + b.boxmaxy) * 0.5);
-							b.cx = (float) b.boxcenterx * wcoordsx;
-							b.cy = (float) b.boxcentery * wcoordsy;
+							b.cx = b.boxcenterx * wcoordsx;
+							b.cy = b.boxcentery * wcoordsy;
 							b = calc_quad(b);
 							quadBlob blob = new quadBlob(b);
 							quadblobslist.add(blob);
@@ -344,8 +349,8 @@ public class ImageBlobs {
 		i = bx;
 		for (j = by; j < ey; j++) {
 			if (testimagemap(i, j)) {
-				b.armleftx = (float) i * wcoordsx;
-				b.armlefty = (float) j * wcoordsy;
+				b.armleftx = i * wcoordsx;
+				b.armlefty = j * wcoordsy;
 				found = true;
 				break;
 			}
@@ -354,8 +359,8 @@ public class ImageBlobs {
 			j = by;
 			for (i = bx; i < cx; i++) {
 				if (testimagemap(i, j)) {
-					b.armleftx = (float) i * wcoordsx;
-					b.armlefty = (float) j * wcoordsy;
+					b.armleftx = i * wcoordsx;
+					b.armlefty = j * wcoordsy;
 					found = true;
 					break;
 				}
@@ -371,8 +376,8 @@ public class ImageBlobs {
 		i = ex;
 		for (j = by; j < ey; j++) {
 			if (testimagemap(i, j)) {
-				b.armrightx = (float) i * wcoordsx;
-				b.armrighty = (float) j * wcoordsy;
+				b.armrightx = i * wcoordsx;
+				b.armrighty = j * wcoordsy;
 				found = true;
 				break;
 			}
@@ -382,8 +387,8 @@ public class ImageBlobs {
 			j = by;
 			for (i = ex - 1; i > cx; i++) {
 				if (testimagemap(i, j)) {
-					b.armrightx = (float) i * wcoordsx;
-					b.armrighty = (float) j * wcoordsy;
+					b.armrightx = i * wcoordsx;
+					b.armrighty = j * wcoordsy;
 					found = true;
 					break;
 				}
@@ -419,13 +424,13 @@ public class ImageBlobs {
 		for (i = cx; i < ex; i++) {
 
 			if (testimagemap(i, j)) {
-				b.headx = (float) i * wcoordsx;
-				b.heady = (float) j * wcoordsy;
+				b.headx = i * wcoordsx;
+				b.heady = j * wcoordsy;
 				break;
 			}
 			if (testimagemap(k--, j)) {
-				b.headx = (float) i * wcoordsx;
-				b.heady = (float) j * wcoordsy;
+				b.headx = i * wcoordsx;
+				b.heady = j * wcoordsy;
 				break;
 			}
 		}
@@ -472,8 +477,8 @@ public class ImageBlobs {
 		j = ey;
 		for (i = bx; i < cx; i++) {
 			if (testimagemap(i, j)) {
-				b.footleftx = (float) i * wcoordsx;
-				b.footlefty = (float) j * wcoordsx;
+				b.footleftx = i * wcoordsx;
+				b.footlefty = j * wcoordsx;
 				// System.out.print("found armleft at "+b.armleftx+" "+b.armlefty
 				// );
 				break;
@@ -484,8 +489,8 @@ public class ImageBlobs {
 		j = ey;
 		for (i = ex - 1; i > cx; i--) {
 			if (testimagemap(i, j)) {
-				b.footrightx = (float) i * wcoordsx;
-				b.footrighty = (float) j * wcoordsy;
+				b.footrightx = i * wcoordsx;
+				b.footrighty = j * wcoordsy;
 				break;
 			}
 		}
@@ -521,8 +526,8 @@ public class ImageBlobs {
 		j = ey;
 		for (i = cx; i < ex; i++) {
 			if (testimagemap(i, j)) {
-				b.bottomx = (float) i * wcoordsx;
-				b.bottomy = (float) j * wcoordsy;
+				b.bottomx = i * wcoordsx;
+				b.bottomy = j * wcoordsy;
 				found = true;
 				break;
 
@@ -532,8 +537,8 @@ public class ImageBlobs {
 		if (!found) {
 			for (i = 0; i <= cx; i++) {
 				if (testimagemap(i, j)) {
-					b.bottomx = (float) i * wcoordsx;
-					b.bottomy = (float) j * wcoordsy;
+					b.bottomx = i * wcoordsx;
+					b.bottomy = j * wcoordsy;
 					found = true;
 					break;
 
@@ -542,8 +547,8 @@ public class ImageBlobs {
 		}
 
 		if (!found) {
-			b.bottomx = (float) b.boxcenterx * wcoordsx;
-			b.bottomy = (float) ey * wcoordsy;
+			b.bottomx = b.boxcenterx * wcoordsx;
+			b.bottomy = ey * wcoordsy;
 
 		}
 
@@ -561,8 +566,8 @@ public class ImageBlobs {
 		i = bx;
 		for (j = by; j < ey; j++) {
 			if (testimagemap(i, j)) {
-				b.quad[0] = (float) i * wcoordsx;
-				b.quad[1] = (float) j * wcoordsy;
+				b.quad[0] = i * wcoordsx;
+				b.quad[1] = j * wcoordsy;
 				found = true;
 				break;
 			}
@@ -572,8 +577,8 @@ public class ImageBlobs {
 			j = by;
 			for (i = bx; i < cx; i++) {
 				if (testimagemap(i, j)) {
-					b.quad[0] = (float) i * wcoordsx;
-					b.quad[1] = (float) j * wcoordsy;
+					b.quad[0] = i * wcoordsx;
+					b.quad[1] = j * wcoordsy;
 					found = true;
 					break;
 				}
@@ -589,8 +594,8 @@ public class ImageBlobs {
 		i = ex;
 		for (j = by; j < ey; j++) {
 			if (testimagemap(i, j)) {
-				b.quad[2] = (float) i * wcoordsx;
-				b.quad[3] = (float) j * wcoordsy;
+				b.quad[2] = i * wcoordsx;
+				b.quad[3] = j * wcoordsy;
 				found = true;
 				break;
 			}
@@ -601,8 +606,8 @@ public class ImageBlobs {
 			j = by;
 			for (i = ex - 1; i > cx; i++) {
 				if (testimagemap(i, j)) {
-					b.quad[2] = (float) i * wcoordsx;
-					b.quad[3] = (float) j * wcoordsy;
+					b.quad[2] = i * wcoordsx;
+					b.quad[3] = j * wcoordsy;
 					found = true;
 					break;
 				}
@@ -629,8 +634,8 @@ public class ImageBlobs {
 		j = ey;
 		for (i = bx; i < cx; i++) {
 			if (testimagemap(i, j)) {
-				b.quad[4] = (float) i * wcoordsx;
-				b.quad[5] = (float) j * wcoordsx;
+				b.quad[4] = i * wcoordsx;
+				b.quad[5] = j * wcoordsx;
 				break;
 
 			}
@@ -639,8 +644,8 @@ public class ImageBlobs {
 		j = ey;
 		for (i = ex - 1; i > cx; i--) {
 			if (testimagemap(i, j)) {
-				b.quad[6] = (float) i * wcoordsx;
-				b.quad[7] = (float) j * wcoordsy;
+				b.quad[6] = i * wcoordsx;
+				b.quad[7] = j * wcoordsy;
 				break;
 			}
 		}
@@ -1039,7 +1044,7 @@ public class ImageBlobs {
 
 		for (int i = prevtrackedblobs.size() - 1; i >= 0; i--) {
 
-			trackedBlob tb = (trackedBlob) prevtrackedblobs.get(i);
+			trackedBlob tb = prevtrackedblobs.get(i);
 
 			if (tb.linked)
 				System.out.print("flob: a linked blob in doremove error." + i
@@ -1100,7 +1105,7 @@ public class ImageBlobs {
 
 		if (x >= 0 && x < w && y >= 0 && y < h) {
 			for (int i = 0; i < theblobs.size(); i++) {
-				ABlob b = (ABlob) theblobs.get(i);
+				ABlob b = theblobs.get(i);
 				if (x > b.boxminx && x < b.boxmaxx && y > b.boxminy
 						&& y < b.boxmaxy) {
 					// inside a box; if is true, return, else keep searching
@@ -1125,11 +1130,11 @@ public class ImageBlobs {
 		// receives a pair, tests inside any box, if inside boxes tests inside
 		// imagemap
 
-		if (x >= 0f && x < (float) w - 1f && y >= 0f && y < (float) h - 1f) {
+		if (x >= 0f && x < w - 1f && y >= 0f && y < h - 1f) {
 
 			for (int i = 0; i < trackedblobs.size(); i++) {
 				// ABlob b = (ABlob) theblobs.get(i);
-				trackedBlob b = (trackedBlob) trackedblobs.get(i);
+				trackedBlob b = trackedblobs.get(i);
 
 				// 0. close point on blob
 				float closex = (x < b.boxminx) ? b.boxminx
@@ -1143,7 +1148,7 @@ public class ImageBlobs {
 				float d0 = dx0 * dx0 + dy0 * dy0;
 				float minsdist = rad * rad + b.rad2;
 
-				if (d0 < minsdist && imagemap[(int) ((int) y * w + (int) x)]) {
+				if (d0 < minsdist && imagemap[((int) y * w + (int) x)]) {
 					// compute normalized vector from close to center
 					float nvx = b.boxcenterx - closex;
 					float nvy = b.boxcentery - closey;
@@ -1186,11 +1191,11 @@ public class ImageBlobs {
 		// receives a pair, tests inside any box, if inside boxes tests inside
 		// imagemap
 
-		if (x >= 0f && x < (float) w && y >= 0f && y < (float) h) {
+		if (x >= 0f && x < w && y >= 0f && y < h) {
 
 			for (int i = 0; i < trackedblobs.size(); i++) {
 				// ABlob b = (ABlob) theblobs.get(i);
-				trackedBlob b = (trackedBlob) trackedblobs.get(i);
+				trackedBlob b = trackedblobs.get(i);
 
 				// 0. close point on blob
 				float closex = (x < b.boxminx) ? b.boxminx

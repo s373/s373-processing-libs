@@ -270,52 +270,31 @@ public class Flob {
 					backgroundVal = (bkgdColor >> 16) & 0xFF;
 					break;
 				case LUMA601:
-					float pixval = (float) (0.299f
-							* (float) ((currColor) & 0xFF) + 0.587
-							* (float) ((currColor >> 8) & 0xFF) + 0.114 * (float) ((currColor >> 16) & 0xFF)) + 0.5f; // CCIR
-																														// 601
-					// float pixval = (float) (0.2126f * (float)((currColor) &
-					// 0xFF) + 0.7152 * (float)((currColor>>8) & 0xFF) + 0.0722
-					// *(float)((currColor>>16) & 0xFF)) +0.5f; // CCIR 709
-					float bgval = (float) (0.299f
-							* (float) ((bkgdColor) & 0xFF) + 0.587
-							* (float) ((bkgdColor >> 8) & 0xFF) + 0.114 * (float) ((bkgdColor >> 16) & 0xFF)) + 0.5f; // CCIR
-																														// 601
-					// float bgval = (float) (0.2126f * (float)((bkgdColor) &
-					// 0xFF) + 0.7152 * (float)((bkgdColor>>8) & 0xFF) + 0.0722
-					// *(float)((bkgdColor>>16) & 0xFF)) +0.5f; // CCIR 709
+					float pixval = (float) (0.299f * ((currColor) & 0xFF)
+							+ 0.587 * ((currColor >> 8) & 0xFF) + 0.114 * ((currColor >> 16) & 0xFF)) + 0.5f; // CCIR
+					float bgval = (float) (0.299f * ((bkgdColor) & 0xFF)
+							+ 0.587 * ((bkgdColor >> 8) & 0xFF) + 0.114 * ((bkgdColor >> 16) & 0xFF)) + 0.5f; // CCIR
 					currentVal = (int) pixval;
 					backgroundVal = (int) bgval;
 					break;
 				case LUMA709:
-					// float pixval = (float) (0.299f * (float)((currColor) &
-					// 0xFF) + 0.587 * (float)((currColor>>8) & 0xFF) + 0.114
-					// *(float)((currColor>>16) & 0xFF)) +0.5f; // CCIR 601
-					float pixval1 = (float) (0.2126f
-							* (float) ((currColor) & 0xFF) + 0.7152
-							* (float) ((currColor >> 8) & 0xFF) + 0.0722 * (float) ((currColor >> 16) & 0xFF)) + 0.5f; // CCIR
-																														// 709
-					// float bgval = (float) (0.299f * (float)((bkgdColor) &
-					// 0xFF) + 0.587 * (float)((bkgdColor>>8) & 0xFF) + 0.114
-					// *(float)((bkgdColor>>16) & 0xFF)) +0.5f; // CCIR 601
-					float bgval1 = (float) (0.2126f
-							* (float) ((bkgdColor) & 0xFF) + 0.7152
-							* (float) ((bkgdColor >> 8) & 0xFF) + 0.0722 * (float) ((bkgdColor >> 16) & 0xFF)) + 0.5f; // CCIR
-																														// 709
+					float pixval1 = (float) (0.2126f * ((currColor) & 0xFF)
+							+ 0.7152 * ((currColor >> 8) & 0xFF) + 0.0722 * ((currColor >> 16) & 0xFF)) + 0.5f; // CCIR
+					float bgval1 = (float) (0.2126f * ((bkgdColor) & 0xFF)
+							+ 0.7152 * ((bkgdColor >> 8) & 0xFF) + 0.0722 * ((bkgdColor >> 16) & 0xFF)) + 0.5f; // CCIR
+																												// 709
 					currentVal = (int) pixval1;
 					backgroundVal = (int) bgval1;
 					break;
 				case LUMAUSER:
-					float pixval2 = (float) (lumausercoefs[0]
-							* (float) ((currColor) & 0xFF) + lumausercoefs[1]
-							* (float) ((currColor >> 8) & 0xFF) + lumausercoefs[2]
-							* (float) ((currColor >> 16) & 0xFF)) + 0.5f; // CCIR
-																			// 709
-					float bgval2 = (float) (lumausercoefs[0]
-							* (float) ((bkgdColor) & 0xFF) + lumausercoefs[1]
-							* (float) ((bkgdColor >> 8) & 0xFF) + lumausercoefs[2]
-							* (float) ((bkgdColor >> 16) & 0xFF)) + 0.5f; // CCIR
-																			// 709
+					float pixval2 = (lumausercoefs[0] * ((currColor) & 0xFF)
+							+ lumausercoefs[1] * ((currColor >> 8) & 0xFF) + lumausercoefs[2]
+							* ((currColor >> 16) & 0xFF)) + 0.5f; // CCIR
+																	// 709
+					float bgval2 = (lumausercoefs[0] * ((bkgdColor) & 0xFF)
+							+ lumausercoefs[1] * ((bkgdColor >> 8) & 0xFF) + lumausercoefs[2]
+							* ((bkgdColor >> 16) & 0xFF)) + 0.5f; // CCIR
+																	// 709
 					currentVal = (int) pixval2;
 					backgroundVal = (int) bgval2;
 					break;
@@ -332,14 +311,9 @@ public class Flob {
 
 				videotexbin.pixels[i] = (binarize << 24) | (binarize << 16)
 						| (binarize << 8) | binarize;
-				// videotexbin.pixels[i] = 0xFF000000 | (binarize << 16) |
-				// (binarize << 8) | binarize;
-				// videotexgray.pixels[i] = 0xFF000000 | (diffG << 16) | (diffG
-				// << 8) | diffG;
 			}
 			videoimg.updatePixels();
 			videotexbin.updatePixels();
-			// videotexgray.updatePixels();
 
 			return videotexbin;
 
@@ -364,52 +338,32 @@ public class Flob {
 					backgroundVal = (bkgdColor >> 16) & 0xFF;
 					break;
 				case LUMA601:
-					float pixval = (float) (0.299f
-							* (float) ((currColor) & 0xFF) + 0.587
-							* (float) ((currColor >> 8) & 0xFF) + 0.114 * (float) ((currColor >> 16) & 0xFF)) + 0.5f; // CCIR
-																														// 601
-					// float pixval = (float) (0.2126f * (float)((currColor) &
-					// 0xFF) + 0.7152 * (float)((currColor>>8) & 0xFF) + 0.0722
-					// *(float)((currColor>>16) & 0xFF)) +0.5f; // CCIR 709
-					float bgval = (float) (0.299f
-							* (float) ((bkgdColor) & 0xFF) + 0.587
-							* (float) ((bkgdColor >> 8) & 0xFF) + 0.114 * (float) ((bkgdColor >> 16) & 0xFF)) + 0.5f; // CCIR
-																														// 601
-					// float bgval = (float) (0.2126f * (float)((bkgdColor) &
-					// 0xFF) + 0.7152 * (float)((bkgdColor>>8) & 0xFF) + 0.0722
-					// *(float)((bkgdColor>>16) & 0xFF)) +0.5f; // CCIR 709
+					float pixval = (float) (0.299f * ((currColor) & 0xFF)
+							+ 0.587 * ((currColor >> 8) & 0xFF) + 0.114 * ((currColor >> 16) & 0xFF)) + 0.5f; // CCIR
+					float bgval = (float) (0.299f * ((bkgdColor) & 0xFF)
+							+ 0.587 * ((bkgdColor >> 8) & 0xFF) + 0.114 * ((bkgdColor >> 16) & 0xFF)) + 0.5f; // CCIR
+																												// 601
 					currentVal = (int) pixval;
 					backgroundVal = (int) bgval;
 					break;
 				case LUMA709:
-					// float pixval = (float) (0.299f * (float)((currColor) &
-					// 0xFF) + 0.587 * (float)((currColor>>8) & 0xFF) + 0.114
-					// *(float)((currColor>>16) & 0xFF)) +0.5f; // CCIR 601
-					float pixval1 = (float) (0.2126f
-							* (float) ((currColor) & 0xFF) + 0.7152
-							* (float) ((currColor >> 8) & 0xFF) + 0.0722 * (float) ((currColor >> 16) & 0xFF)) + 0.5f; // CCIR
-																														// 709
-					// float bgval = (float) (0.299f * (float)((bkgdColor) &
-					// 0xFF) + 0.587 * (float)((bkgdColor>>8) & 0xFF) + 0.114
-					// *(float)((bkgdColor>>16) & 0xFF)) +0.5f; // CCIR 601
-					float bgval1 = (float) (0.2126f
-							* (float) ((bkgdColor) & 0xFF) + 0.7152
-							* (float) ((bkgdColor >> 8) & 0xFF) + 0.0722 * (float) ((bkgdColor >> 16) & 0xFF)) + 0.5f; // CCIR
-																														// 709
+					float pixval1 = (float) (0.2126f * ((currColor) & 0xFF)
+							+ 0.7152 * ((currColor >> 8) & 0xFF) + 0.0722 * ((currColor >> 16) & 0xFF)) + 0.5f; // CCIR
+					float bgval1 = (float) (0.2126f * ((bkgdColor) & 0xFF)
+							+ 0.7152 * ((bkgdColor >> 8) & 0xFF) + 0.0722 * ((bkgdColor >> 16) & 0xFF)) + 0.5f; // CCIR
+																												// 709
 					currentVal = (int) pixval1;
 					backgroundVal = (int) bgval1;
 					break;
 				case LUMAUSER:
-					float pixval2 = (float) (lumausercoefs[0]
-							* (float) ((currColor) & 0xFF) + lumausercoefs[1]
-							* (float) ((currColor >> 8) & 0xFF) + lumausercoefs[2]
-							* (float) ((currColor >> 16) & 0xFF)) + 0.5f; // CCIR
-																			// 709
-					float bgval2 = (float) (lumausercoefs[0]
-							* (float) ((bkgdColor) & 0xFF) + lumausercoefs[1]
-							* (float) ((bkgdColor >> 8) & 0xFF) + lumausercoefs[2]
-							* (float) ((bkgdColor >> 16) & 0xFF)) + 0.5f; // CCIR
-																			// 709
+					float pixval2 = (lumausercoefs[0] * ((currColor) & 0xFF)
+							+ lumausercoefs[1] * ((currColor >> 8) & 0xFF) + lumausercoefs[2]
+							* ((currColor >> 16) & 0xFF)) + 0.5f; // CCIR
+																	// 709
+					float bgval2 = (lumausercoefs[0] * ((bkgdColor) & 0xFF)
+							+ lumausercoefs[1] * ((bkgdColor >> 8) & 0xFF) + lumausercoefs[2]
+							* ((bkgdColor >> 16) & 0xFF)) + 0.5f; // CCIR
+																	// 709
 					currentVal = (int) pixval2;
 					backgroundVal = (int) bgval2;
 					break;
@@ -424,10 +378,6 @@ public class Flob {
 
 				videotexbin.pixels[i] = (binarize << 24) | (binarize << 16)
 						| (binarize << 8) | binarize;
-				// videotexbin.pixels[i] = 0xFF000000 | (binarize << 16) |
-				// (binarize << 8) | binarize;
-				// videotexgray.pixels[i] = 0xFF000000 | (diffG << 16) | (diffG
-				// << 8) | diffG;
 			}
 
 			// now update motion img and use that as base for tracking
@@ -436,14 +386,12 @@ public class Flob {
 				int value = (videotexmotion.pixels[i] >> 8) & 0xff;
 				value -= videofade; // minus fade
 				value += (videotexbin.pixels[i] >> 8) & 0xff; // + binary
-				// value = PApplet.constrain(value,0,255);
 				value = value < 0 ? 0 : value > 255 ? 255 : value;
 				videotexmotion.pixels[i] = (value << 24) | (value << 16)
 						| (value << 8) | value;
 			}
 
 			videoimg.updatePixels();
-			// videotexbin.updatePixels();
 			videotexmotion.updatePixels();
 
 			// learn background as the frame that just passed
@@ -1061,6 +1009,52 @@ public class Flob {
 
 	}
 
+	public float[] getABlobExtreme(int i) {
+
+		ABlob ab = imageblobs.theblobs.get(i);
+		float coords[] = { ab.cx, ab.cy, 0 };
+
+		// calc quadrant
+		int wquad = 0; // 0 center, 1 topleft, 2 topright, 3 bottom right, 4
+		// bottom left
+		float bdx2 = ab.dimx / 2;
+		float bdy2 = ab.dimy / 2;
+
+		if (ab.cx < imageblobs.w2 && ab.cy < imageblobs.h2) {
+			wquad = 1;
+			coords[0] = ab.cx - bdx2;
+			coords[1] = ab.cy - bdy2;
+		} else if (ab.cx > imageblobs.w2 && ab.cy < imageblobs.h2) {
+			wquad = 2;
+			coords[0] = ab.cx + bdx2;
+			coords[1] = ab.cy - bdy2;
+		} else if (ab.cx > imageblobs.w2 && ab.cy > imageblobs.h2) {
+			wquad = 3;
+			coords[0] = ab.cx + bdx2;
+			coords[1] = ab.cy + bdy2;
+		} else if (ab.cx < imageblobs.w2 && ab.cy > imageblobs.h2) {
+			wquad = 4;
+			coords[0] = ab.cx - bdx2;
+			coords[1] = ab.cy + bdy2;
+		}
+
+		coords[2] = wquad;
+		// // ensure arms calc is on, feet also
+		// if (ab.cx < imageblobs.w2) {
+		// coords[0] = ab.armleftx;
+		// } else if (ab.cx >= imageblobs.w2) {
+		// coords[0] = ab.armrightx;
+		// }
+		// if (ab.cy < imageblobs.h2) {
+		// coords[0] = ab.armleftx;
+		// } else if (ab.cx >= imageblobs.w2) {
+		// coords[0] = ab.armrightx;
+		// }
+
+		return coords;
+		// return ab;
+	}
+
 	/**
 	 * getABlob returns the nth calc'ed blob of the tracker<br>
 	 * returns one ABlob element<br>
@@ -1069,13 +1063,13 @@ public class Flob {
 	 * @return ABlob
 	 */
 	public ABlob getABlob(int i) {
-		ABlob ab = imageblobs.theblobs.get(i);
-		return ab;
+		return imageblobs.theblobs.get(i);
+		// return ab;
 	}
 
 	public quadBlob getQuadBlob(int i) {
-		quadBlob qb = imageblobs.quadblobslist.get(i);
-		return qb;
+		return imageblobs.quadblobslist.get(i);
+		// return qb;
 	}
 
 	/**
@@ -1086,8 +1080,8 @@ public class Flob {
 	 * @return ABlob
 	 */
 	public ABlob getPreviousABlob(int i) {
-		ABlob ab = imageblobs.prevblobs.get(i);
-		return ab;
+		return imageblobs.prevblobs.get(i);
+		// return ab;
 	}
 
 	// calcsimpleAL
@@ -1096,18 +1090,16 @@ public class Flob {
 		float data[] = new float[12];
 		trackedBlob tb = imageblobs.trackedblobs.get(i);
 		data[0] = tb.id;
-		data[1] = tb.cx * (float) worldwidth;
-		data[2] = tb.cy * (float) worldheight;
-		data[3] = tb.velx * (float) worldwidth;
-		data[4] = tb.vely * (float) worldheight;
-		data[5] = tb.prevelx * (float) worldwidth;
-		;
-		data[6] = tb.prevely * (float) worldheight;
+		data[1] = tb.cx * worldwidth;
+		data[2] = tb.cy * worldheight;
+		data[3] = tb.velx * worldwidth;
+		data[4] = tb.vely * worldheight;
+		data[5] = tb.prevelx * worldwidth;
+		data[6] = tb.prevely * worldheight;
 		data[7] = tb.presencetime;
-		data[8] = tb.dimx * (float) worldwidth;
-		data[9] = tb.dimy * (float) worldheight;
-		data[10] = tb.rad * (float) worldwidth;
-		;
+		data[8] = tb.dimx * worldwidth;
+		data[9] = tb.dimy * worldheight;
+		data[10] = tb.rad * worldwidth;
 		data[11] = tb.birthtime;
 
 		return data;
@@ -1145,18 +1137,17 @@ public class Flob {
 		float data[] = new float[12];
 		trackedBlob tb = imageblobs.trackedblobs.get(i);
 		data[0] = tb.id;
-		data[1] = tb.cx * (float) worldwidth;
-		data[2] = tb.cy * (float) worldheight;
-		data[3] = tb.velx * (float) worldwidth;
-		data[4] = tb.vely * (float) worldheight;
-		data[5] = tb.prevelx * (float) worldwidth;
-		data[6] = tb.prevely * (float) worldheight;
+		data[1] = tb.cx * worldwidth;
+		data[2] = tb.cy * worldheight;
+		data[3] = tb.velx * worldwidth;
+		data[4] = tb.vely * worldheight;
+		data[5] = tb.prevelx * worldwidth;
+		data[6] = tb.prevely * worldheight;
 		data[7] = tb.presencetime;
-		data[8] = tb.dimx * (float) worldwidth;
-		data[9] = tb.dimy * (float) worldheight;
-		data[10] = tb.rad * (float) worldwidth;
+		data[8] = tb.dimx * worldwidth;
+		data[9] = tb.dimy * worldheight;
+		data[10] = tb.rad * worldwidth;
 		data[11] = tb.birthtime;
-
 		return data;
 	}
 
@@ -1186,29 +1177,23 @@ public class Flob {
 	public float[] getCentroids() {
 		int numblobs = imageblobs.theblobs.size();
 		float centroids[] = new float[2 * numblobs];
-
 		for (int i = 0; i < numblobs; i++) {
-			ABlob blob = (ABlob) imageblobs.theblobs.get(i);
-			centroids[i * 2 + 0] = blob.cx * (float) worldwidth;
-			centroids[i * 2 + 1] = blob.cy * (float) worldheight;
+			ABlob blob = imageblobs.theblobs.get(i);
+			centroids[i * 2 + 0] = blob.cx * worldwidth;
+			centroids[i * 2 + 1] = blob.cy * worldheight;
 		}
-
 		return centroids;
-
 	}
 
 	public float[] getPreviousCentroids() {
 		int numblobs = imageblobs.prevblobs.size();
 		float centroids[] = new float[2 * numblobs];
-
 		for (int i = 0; i < numblobs; i++) {
-			ABlob blob = (ABlob) imageblobs.prevblobs.get(i);
-			centroids[i * 2 + 0] = blob.cx * (float) worldwidth;
-			centroids[i * 2 + 1] = blob.cy * (float) worldheight;
+			ABlob blob = imageblobs.prevblobs.get(i);
+			centroids[i * 2 + 0] = blob.cx * worldwidth;
+			centroids[i * 2 + 1] = blob.cy * worldheight;
 		}
-
 		return centroids;
-
 	}
 
 	/**
@@ -1219,12 +1204,10 @@ public class Flob {
 
 	public float[] getCentroid(int i) {
 		float centroid[] = new float[2];
-		ABlob blob = (ABlob) imageblobs.theblobs.get(i);
+		ABlob blob = imageblobs.theblobs.get(i);
 		centroid[0] = blob.cx;// * (float)worldwidth; //already passed
 		centroid[1] = blob.cy;// * (float)worldheight;
-
 		return centroid;
-
 	}
 
 	/**
@@ -1236,13 +1219,11 @@ public class Flob {
 
 	public float[] getCentroidPixelcount(int i) {
 		float centroid[] = new float[3];
-		ABlob blob = (ABlob) imageblobs.theblobs.get(i);
+		ABlob blob = imageblobs.theblobs.get(i);
 		centroid[0] = blob.cx;// * (float)worldwidth;
 		centroid[1] = blob.cy;// * (float)worldheight;
 		centroid[2] = blob.pixelcount;
-
 		return centroid;
-
 	}
 
 	/**
@@ -1254,14 +1235,10 @@ public class Flob {
 
 	public float[] getPreviousCurrentCentroid(int i) {
 		float centroid[] = new float[4];
-		ABlob blob = (ABlob) imageblobs.theblobs.get(i);
-		centroid[0] = blob.cx * (float) worldwidth;
-		centroid[1] = blob.cy * (float) worldheight;
-		// centroid[2] = blob.pcx;
-		// centroid[3] = blob.pcy;
-
+		ABlob blob = imageblobs.theblobs.get(i);
+		centroid[0] = blob.cx * worldwidth;
+		centroid[1] = blob.cy * worldheight;
 		return centroid;
-
 	}
 
 	/**
@@ -1273,15 +1250,11 @@ public class Flob {
 
 	public float[] getPreviousCurrentCentroidMass(int i) {
 		float centroid[] = new float[5];
-		ABlob blob = (ABlob) imageblobs.theblobs.get(i);
-		centroid[0] = blob.cx * (float) worldwidth;
-		centroid[1] = blob.cy * (float) worldheight;
-		// centroid[2] = blob.pcx;
-		// centroid[3] = blob.pcy;
+		ABlob blob = imageblobs.theblobs.get(i);
+		centroid[0] = blob.cx * worldwidth;
+		centroid[1] = blob.cy * worldheight;
 		centroid[4] = blob.pixelcount;
-
 		return centroid;
-
 	}
 
 	/**
@@ -1293,12 +1266,10 @@ public class Flob {
 
 	public float[] getDim(int i) {
 		float centroid[] = new float[2];
-		ABlob blob = (ABlob) imageblobs.theblobs.get(i);
-		centroid[0] = blob.dimx * (float) worldwidth;
-		centroid[1] = blob.dimy * (float) worldheight;
-
+		ABlob blob = imageblobs.theblobs.get(i);
+		centroid[0] = blob.dimx * worldwidth;
+		centroid[1] = blob.dimy * worldheight;
 		return centroid;
-
 	}
 
 	/**
@@ -1317,7 +1288,7 @@ public class Flob {
 
 		int box[] = new int[4];
 
-		ABlob blob = (ABlob) imageblobs.theblobs.get(i);
+		ABlob blob = imageblobs.theblobs.get(i);
 		box[0] = blob.boxminx;// boxcenterx;
 		box[1] = blob.boxminy;// boxcentery;
 		box[2] = blob.boxmaxx;// - blob.boxminx;
@@ -1360,8 +1331,8 @@ public class Flob {
 	public boolean testPos(float x, float y) {
 		x = PApplet.constrain(x, 0.f, 1.f);
 		y = PApplet.constrain(y, 0.f, 1.f);
-		int px = (int) (x * (float) imageblobs.w);
-		int py = (int) (y * (float) imageblobs.h);
+		int px = (int) (x * imageblobs.w);
+		int py = (int) (y * imageblobs.h);
 		return imageblobs.imagemap[py * imageblobs.w + px];
 
 	}
