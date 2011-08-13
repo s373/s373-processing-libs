@@ -38,7 +38,7 @@ import processing.core.PImage;
  * 
  * @author André Sier <br>
  *         url: http://s373.net/code/flob<br>
- *         version 0.0.1s<br>
+ *         version 0.0.1u<br>
  * <br>
  */
 
@@ -95,7 +95,7 @@ public class Flob {
 	public static int trackedBlobLifeTime = 5; // 60
 
 	// PApplet myParent; // reference to the PApplet
-	public static String VERSION = "flob 0.0.1s - built ";
+	public static String VERSION = "flob 0.0.1u - built ";
 
 	public Flob(PApplet theParent) {
 		videoresw = videoresh = 128;

@@ -74,7 +74,7 @@ void setup() {
 
   /// or now just concatenate messages
   flob.setThresh(tresh).setSrcImage(videotex).setBackground(video)
-  .setBlur(0).setOm(1).setFade(fade).setMirror(true,false);
+  .setBlur(0).setOm(1).setFade(fade).setMirror(true,false);;
 
 
   font = createFont("monaco",9);
@@ -116,7 +116,7 @@ void draw() {
     float xtreme[] = flob.getABlobExtreme(i);
     fill(255,0,0,255);
     rect(xtreme[0], xtreme[1], 10,10);
-//    println("blob "+i+" xtreme: "+xtreme[2]);
+    println("blob "+i+" xtreme: "+xtreme[2]);
     //centroid
     fill(0,255,0,200);
     rect(ab.cx,ab.cy, 5, 5);
