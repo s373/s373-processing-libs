@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import processing.core.PApplet;
+import processing.core.PConstants;
 import processing.core.PImage;
 
 /**
@@ -43,6 +44,8 @@ import processing.core.PImage;
  */
 
 public class Flob {
+
+	public PApplet app;
 
 	public ImageBlobs imageblobs;
 	public PImage videoimg;
@@ -95,9 +98,10 @@ public class Flob {
 	public static int trackedBlobLifeTime = 5; // 60
 
 	// PApplet myParent; // reference to the PApplet
-	public static String VERSION = "flob 0.0.1u - built ";
+	public static String VERSION = "flob 0.0.1v - built ";
 
 	public Flob(PApplet theParent) {
+		app = theParent;
 		videoresw = videoresh = 128;
 		worldwidth = theParent.width;
 		worldheight = theParent.height;
@@ -111,7 +115,8 @@ public class Flob {
 	 * @param PApplet
 	 *            , PImage
 	 */
-	public Flob(PImage video, PApplet theParent) {
+	public Flob(PApplet theParent, PImage video) {
+		app = theParent;
 		videoresw = video.width;
 		videoresh = video.height;
 		worldwidth = theParent.width;
@@ -128,7 +133,8 @@ public class Flob {
 	 *            , width, height
 	 */
 
-	public Flob(PImage video, int w, int h) {
+	public Flob(PApplet theParent, PImage video, int w, int h) {
+		app = theParent;
 		videoresw = video.width;
 		videoresh = video.height;
 		worldwidth = w;
@@ -145,7 +151,8 @@ public class Flob {
 	 *            , srcHeight, dstWidth, dstHeight
 	 */
 
-	public Flob(int srcW, int srcH, int dstW, int dstH) {
+	public Flob(PApplet theParent, int srcW, int srcH, int dstW, int dstH) {
+		app = theParent;
 		videoresw = srcW;
 		videoresh = srcH;
 		worldwidth = dstW;
@@ -157,11 +164,17 @@ public class Flob {
 		trackfeatures = new boolean[5];
 		for (int i = 0; i < 5; i++)
 			trackfeatures[i] = false;
-		videoimg = new PImage(videoresw, videoresh);
-		videotexbin = new PImage(videoresw, videoresh);
-		videotexmotion = new PImage(videoresw, videoresh);
-		videoteximgmotion = new PImage(videoresw, videoresh);
-		videotex = new PImage(videoresw, videoresh);
+		// videoimg = new PImage(videoresw, videoresh);
+		// videotexbin = new PImage(videoresw, videoresh);
+		// videotexmotion = new PImage(videoresw, videoresh);
+		// videoteximgmotion = new PImage(videoresw, videoresh);
+		// videotex = new PImage(videoresw, videoresh);
+		videoimg = app.createImage(videoresw, videoresh, PConstants.RGB);
+		videotexbin = app.createImage(videoresw, videoresh, PConstants.RGB);
+		videotexmotion = app.createImage(videoresw, videoresh, PConstants.RGB);
+		videoteximgmotion = app.createImage(videoresw, videoresh,
+				PConstants.RGB);
+		videotex = app.createImage(videoresw, videoresh, PConstants.RGB);
 		numPixels = videoresw * videoresh;
 		backgroundPixels = new int[numPixels];
 		imageblobs = new ImageBlobs(this);// pass flob pointer
@@ -467,6 +480,7 @@ public class Flob {
 			}
 		}
 
+		videotex.updatePixels();
 		return videotex;
 
 	}
