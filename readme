@@ -2,11 +2,16 @@ s373.net/x
 
 codex repository for my processing code 2007+
 
-processing libraries
+s373 processing libraries
+license: lgpl
 
 boids
 cellularautomata
 dna
 flob
+marchingcubes
+gui
+apache
+shell
 
 
