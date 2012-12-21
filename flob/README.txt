@@ -1,7 +1,7 @@
 /* 
 
 flob // flood-fill multi-blob detector 
-(c) copyright 2008-12 andré sier
+(c) copyright 2008-12 Andre Sier
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
