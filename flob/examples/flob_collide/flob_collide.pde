@@ -49,7 +49,7 @@ void setup(){
   
   flob.setMirror(true,false);
   flob.setThresh(10);
-  flob.setFade(5);
+  flob.setFade(45);
   flob.setMinNumPixels(10);
   flob.setImage( vtex );
 

@@ -51,7 +51,7 @@ void setup() {
   flob = new Flob(this, videoinput); 
 
   flob.setThresh(tresh).setSrcImage(videotex).setBackground(videoinput)
-   .setMinNumPix(10).setBlur(0).setOm(1).setFade(fade).setMirror(true, false);
+   .setMinNumPixels(10).setBlur(0).setOm(1).setFade(fade).setMirror(true, false);
 
   font = createFont("monaco", 16);
   textFont(font);

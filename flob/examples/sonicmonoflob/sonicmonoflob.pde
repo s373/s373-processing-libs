@@ -3,13 +3,13 @@
   (vs. 20101220)
   
   sonic version of monoflob, here a polyphonic 49 voice synth (7x7 monoflob)
-  where each button has a sine wave you can turn on/off
+  where each button has a sine wave you can fade or turn on/off (b)
   
   andré sier 
   http://s373.net
  
  */
-float wavemaxamp = 0.21;
+float wavemaxamp = 0.11;
 
 import processing.opengl.*;
 import processing.video.*;
@@ -21,7 +21,7 @@ Capture video;
 Flob flob; 
 ArrayList blobs=new ArrayList();
 PImage videoinput;
-boolean buttonOm=true;
+boolean buttonOm=false;
 /// video params
 int tresh = 10;
 int fade = 25;//120;
@@ -54,7 +54,7 @@ void setup(){
   flob = new Flob(this, videoinput); 
 
   flob.setTresh(tresh).setImage(videotex).setMirror(true,false);
-  flob.setOm(1).setFade(fade).setMinNumPixels(20).setMaxNumPixels(500);
+  flob.setOm(1).setFade(fade).setMinNumPixels(20).setMaxNumPixels(2500);
   flob.setColorMode(colormode);
 
   font = createFont("monaco",16);
@@ -105,6 +105,13 @@ void draw(){
                  +"\nbuttonOm: "+buttonOm +" (b)";
   fill(0,255,0);
   text(stats,5,25);
+  
+  int ns = out.bufferSize();
+  float x = (float) width / ns;
+  for(int i=0; i<ns-1;i++){
+    line(i * x, height/2 + out.mix.get(i)*height/2, 
+          x * (i+1),  height/2 + out.mix.get(i+1)*height/2);
+  }
 
 }
 

@@ -19,8 +19,8 @@ PImage videoinput;
 
 PSys psys;
 
-int tresh = 12;   // adjust treshold value here or keys t/T
-int fade = 25;
+int tresh = 5;//12;   // adjust treshold value here or keys t/T
+int fade = 225;
 int om = 1;
 int videores=128;
 String info="";
@@ -51,7 +51,7 @@ void setup() {
   font = createFont("monaco",16);
   textFont(font);
 
-  psys = new PSys(5500);
+  psys = new PSys(10000);
   stroke(255,200);
   strokeWeight(2);
 }
@@ -71,32 +71,33 @@ void draw() {
   rectMode(CENTER);
 
   int numblobs = blobs.size();
+  stroke(255,25);
   for(int i = 0; i < numblobs; i++) {
     ABlob ab = (ABlob)flob.getABlob(i); 
     psys.touch(ab);
 
     //box
-    fill(0,0,255,100);
+    fill(0,0,255,20);
     rect(ab.cx,ab.cy,ab.dimx,ab.dimy);
     //centroid
-    fill(0,255,0,200);
+    fill(0,255,0,70);
     rect(ab.cx,ab.cy, 5, 5);
     info = ""+ab.id+" "+ab.cx+" "+ab.cy;
     text(info,ab.cx,ab.cy+20);
   }
-
+  stroke(255);
   psys.go();
   psys.draw();
 
   //report presence graphically
-  fill(255,152,255);
+  fill(255,152,255, 100);
   rectMode(CORNER);
   rect(5,5,flob.getPresencef()*width,10);
   String stats = ""+frameRate+"\nflob.numblobs: "+numblobs+"\nflob.thresh:"+tresh+
     " <t/T>"+"\nflob.fade:"+fade+"   <f/F>"+"\nflob.om:"+flob.getOm()+
     "\nflob.image:"+videotex+"\nflob.presence:"+flob.getPresencef()
     +"\nparts: "+psys.p.length;
-  fill(0,255,0);
+  fill(0,255,0, 100);
   text(stats,5,25);
 }
 

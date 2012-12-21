@@ -23,7 +23,7 @@ ArrayList blobs;  // an ArrayList to hold the gathered blobs
 
 /// config params
 int tresh = 10;   // adjust treshold value here or keys t/T
-int fade = 5;
+int fade = 45;
 int om = 1;
 int videores=128;//64//256
 String info="";
@@ -63,7 +63,7 @@ void setup() {
   for (int i=0; i<10; i++) {
 //    sine[i] = new SineWave(440 + 121*i, 0.11, out.sampleRate());
     sine[i] = new SineWave(mtof(i*7+20), 0.21, out.sampleRate());
-    sine[i].portamento(200);
+    sine[i].portamento(1000);
     out.addSignal(sine[i]);
   }
 }
@@ -95,7 +95,7 @@ void draw() {
 
     if (i<10) {
 //      sine[i].setFreq( map(ab.cy, 0, height, 2000, 200) );
-      sine[i].setFreq( mtof(map(ab.cy, 0, height, 120, 10) ));
+      sine[i].setFreq( mtof(map(ab.cy, 0, height, 120, 50) ));
     }
 
 

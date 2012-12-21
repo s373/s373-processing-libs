@@ -71,6 +71,8 @@ void setup() {
   flob.setThresh(tresh).setSrcImage(videotex).setBackground(videoinput)
   .setBlur(0).setOm(1).setFade(fade).setMirror(true,false);;
 
+  boolean feats[] = {true,true,true,true,true};
+  flob.setTrackFeatures( feats );
 
   font = createFont("monaco",16);
   textFont(font);
@@ -119,7 +121,14 @@ void draw() {
     info = ""+ab.id+" "+ab.cx+" "+ab.cy;
     text(info,ab.cx,ab.cy+20);
     
-
+    // skeleton data
+    line(ab.cx, ab.cy, ab.armleftx, ab.armlefty);
+    line(ab.cx, ab.cy, ab.armrightx, ab.armrighty);
+    line(ab.cx, ab.cy, ab.headx, ab.heady);
+    line(ab.cx, ab.cy, ab.bottomx, ab.bottomy);
+    line(ab.cx, ab.cy, ab.footleftx, ab.footlefty);
+    line(ab.cx, ab.cy, ab.footrightx, ab.footrighty);
+    
     
   }
 
