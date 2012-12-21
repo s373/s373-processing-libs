@@ -14,16 +14,11 @@ float ali=random(1e-10,1e-3), coh=random(1e-10,1e-3), sep =random(1e-10,1e-3);
 
 Capture video;
 Flob flob;
+PImage vi;
 
 
 void setup() {  
 
-  try { 
-    quicktime.QTSession.open();
-  } 
-  catch (quicktime.QTException qte) { 
-    qte.printStackTrace();
-  }
 
   size(1024,600,OPENGL);
   // num, centerx, centery, deviation    
@@ -31,11 +26,12 @@ void setup() {
 
 
   // init video data and stream
-  video = new Capture(this, 128, 128, 30);  
-  flob = new Flob(128, 128, width, height);
-
+  video = new Capture(this, 320, 240, 30);
+  video.start();  
+  flob = new Flob(this, 128, 128, width, height);
+  vi = createImage(128,128,RGB);
   flob.setThresh(10).setSrcImage(0)
-  .setBackground(video).setBlur(0).setOm(1).
+  .setBackground(vi).setBlur(0).setOm(1).
   setFade(125).setMirror(true,false);
   
 
@@ -64,13 +60,14 @@ void draw() {
     
   if(video.available()) {
      video.read();
-     flob.calc(flob.binarize(video));
+     vi.copy(video,0,0,320,240,0,0,128,128);
+     flob.calc(flob.binarize(vi));
 
      flock2d.attractionPoints.clear();
    //  float force = map(cos(frameCount*0.005),-1,1, -200,200);
      for(int i=0; i<flob.getNumBlobs(); i++) {
         ABlob ab = (ABlob) flob.getABlob(i); 
-        float force = i%2==0 ? 200 : -200;///map(cos(frameCount*0.005),-1,1, -200,200);
+        float force = i%2==0 ? 200 : -200;
         flock2d.addAttractionPoint(ab.cx,ab.cy,force,ab.dimx);
      }
   }
