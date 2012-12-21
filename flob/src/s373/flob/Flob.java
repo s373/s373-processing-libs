@@ -95,10 +95,10 @@ public class Flob {
 	public int videotexmode, pvideotexmode = 10000;
 	public boolean videotexchange = true;
 
-	// public int videothresh = 50;
-	public float videothresh = 50;
-	// public int videofade = 50; // only in continuous dif
-	public float videofade = 50; // only in continuous dif
+	public int videothresh = 50;
+//	public float videothresh = 50;
+	public int videofade = 50; // only in continuous dif
+//	public float videofade = 50; // only in continuous dif
 	public boolean mirrorX, mirrorY;
 	public int worldwidth, worldheight;
 	public boolean coordsmode = true;
@@ -296,11 +296,13 @@ public class Flob {
 		presence = 0;
 		videoimg.loadPixels();
 
-		int currentVal = 0, backgroundVal = 0, diffVal = 0;
+		int currentVal = 0;
+		int backgroundVal = 0;
 		// float currentValf = 0, backgroundValf = 0, diffValf = 0;
-		float diffValf = 0;
+//		float diffValf = 0;
+		int diffVal = 0;
 
-		float fease = 0.17f;
+//		float fease = 0.17f;
 
 		if (om == STATIC_DIFFERENCE) {
 
@@ -357,18 +359,18 @@ public class Flob {
 
 				}
 
-				backgroundPixelsF[i] += (backgroundVal - backgroundPixelsF[i])
-						* fease;
-				currentPixelsF[i] += (currentVal - currentPixelsF[i]) * fease;
+//				backgroundPixelsF[i] += (backgroundVal - backgroundPixelsF[i])
+//						* fease;
+//				currentPixelsF[i] += (currentVal - currentPixelsF[i]) * fease;
 
 				diffVal = Math.abs(currentVal - backgroundVal);
-				diffValf = Math.abs(currentPixelsF[i] - backgroundPixelsF[i]);
+//				diffValf = Math.abs(currentPixelsF[i] - backgroundPixelsF[i]);
 
-				differencePixelsF[i] = diffValf;
+//				differencePixelsF[i] = diffValf;
 
 				int binarize = 0;
-				// if (diffVal > videothresh) {
-				if (diffValf > videothresh) {
+				// if (diffValf > videothresh) {
+				if (diffVal >= videothresh) {
 					presence += 1;
 					binarize = 255;
 				}
@@ -433,16 +435,17 @@ public class Flob {
 					break;
 				}
 
-				backgroundPixelsF[i] += (backgroundVal - backgroundPixelsF[i])
-						* fease;
-				currentPixelsF[i] += (currentVal - currentPixelsF[i]) * fease;
+//				backgroundPixelsF[i] += (backgroundVal - backgroundPixelsF[i])
+//						* fease;
+//				currentPixelsF[i] += (currentVal - currentPixelsF[i]) * fease;
 
 				diffVal = Math.abs(currentVal - backgroundVal);
-				diffValf = Math.abs(currentPixelsF[i] - backgroundPixelsF[i]);
-				differencePixelsF[i] = diffValf;
+//				diffValf = Math.abs(currentPixelsF[i] - backgroundPixelsF[i]);
+//				differencePixelsF[i] = diffValf;
 
 				int binarize = 0;
-				if (diffValf > videothresh) {
+//				if (diffValf >= videothresh) {
+				if (diffVal >= videothresh) {
 					presence += 1;
 					binarize = 255;
 				}
@@ -457,24 +460,24 @@ public class Flob {
 
 			for (int i = 0; i < numPixels; i++) {
 
-				float valf = differencePixelsF[i];
-				// int value = (videotexmotion.pixels[i] >> 8) & 0xff;
-				valf -= videofade; // minus fade
-				// TODO: 
-				valf += (videotexbin.pixels[i] >> 8) & 0xff; // + binary
-				valf = valf < 0 ? 0 : valf > 255 ? 255 : valf;
-				int value = Math.round(valf);
-				videotexmotion.pixels[i] = (value << 24) | (value << 16)
-						| (value << 8) | value;
+//				float valf = differencePixelsF[i];
+//				// int value = (videotexmotion.pixels[i] >> 8) & 0xff;
+//				valf -= videofade; // minus fade
+//				// TODO: 
+//				valf += (videotexbin.pixels[i] >> 8) & 0xff; // + binary
+//				valf = valf < 0 ? 0 : valf > 255 ? 255 : valf;
+//				int value = Math.round(valf);
+//				videotexmotion.pixels[i] = (value << 24) | (value << 16)
+//						| (value << 8) | value;
 
 				// // previous main int only methodo
 
-				// int value = (videotexmotion.pixels[i] >> 8) & 0xff;
-				// value -= videofade; // minus fade
-				// value += (videotexbin.pixels[i] >> 8) & 0xff; // + binary
-				// value = value < 0 ? 0 : value > 255 ? 255 : value;
-				// videotexmotion.pixels[i] = (value << 24) | (value << 16)
-				// | (value << 8) | value;
+				 int value = (videotexmotion.pixels[i] >> 8) & 0xff;
+				 value -= videofade; // minus fade
+				 value += (videotexbin.pixels[i] >> 8) & 0xff; // + binary
+				 value = value < 0 ? 0 : value > 255 ? 255 : value;
+				 videotexmotion.pixels[i] = (value << 24) | (value << 16)
+				 | (value << 8) | value;
 			}
 
 			videoimg.updatePixels();
@@ -813,7 +816,8 @@ public class Flob {
 	 * @return this
 	 */
 	public Flob setTresh(float t) {
-		videothresh = t;
+//		videothresh = t;
+		videothresh = (int) t;
 		return this;
 	}
 
@@ -823,7 +827,8 @@ public class Flob {
 	 * @return this
 	 */
 	public Flob setThresh(float t) {
-		videothresh = t;
+		videothresh = (int) t;
+//		videothresh = t;
 		return this;
 	}
 
@@ -832,7 +837,7 @@ public class Flob {
 	 * 
 	 * @return int
 	 */
-	public float getThresh() {
+	public int getThresh() {
 		return videothresh;
 	}
 
@@ -842,7 +847,8 @@ public class Flob {
 	 * @return this
 	 */
 	public Flob setFade(float t) {
-		videofade = t;
+//		videofade = t;
+		videofade = (int)t;
 		return this;
 	}
 
