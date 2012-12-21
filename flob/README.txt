@@ -1,7 +1,7 @@
 /* 
 
 flob // flood-fill multi-blob detector 
-(c) copyright 2009 andré sier
+(c) copyright 2008-12 andré sier
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -30,6 +30,17 @@ s373.flob.* is a s373 open source lgpl code product
 ------------
 flob history
 ------------
+
+updates021x // 20121221: 
+- streamlined version usable in processing 2.0, processing 1.5.1
+- floating point shifting debut (beggining)
+- sonic examples
+
+
+updates001t - 001v // 20110800: 
+- code refactoring in PImage creation changes, version compatible with processing 2.0.
+- extreme points in blob
+- shifting code to github
 
 updates001p - 001s // 20100802: 
 - code restructuring and many fixes
