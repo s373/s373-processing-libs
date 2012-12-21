@@ -8,6 +8,7 @@ import s373.flob.*;
 
 Capture video;
 Flob flob; 
+PImage videoinput;
 /// video params
 int tresh = 10;
 int fade = 25;
@@ -17,20 +18,23 @@ int videotex=0;//3
 boolean drawimg=true;
 String info="";
 float fps = 60;
-PFont font = createFont("monaco",10);
-ArrayList blobs;
+PFont font = createFont("monaspace",16);
+ArrayList blobs = new ArrayList();
 
 void setup(){
-  try { quicktime.QTSession.open(); } 
-  catch (quicktime.QTException qte) { qte.printStackTrace(); }
+//  try { quicktime.QTSession.open(); } 
+//  catch (quicktime.QTException qte) { qte.printStackTrace(); }
 
   size(700,500,OPENGL);
   frameRate(fps);
   rectMode(CENTER);
-  video = new Capture(this, videores, videores, (int)fps);  
-  flob = new Flob(this, video, width, height);
-  flob.setOm(om);
-  //  flob.setMirror(true,false); 
+  
+  video = new Capture(this, 320, 240, (int)fps);
+  video.start();  
+  
+  videoinput = createImage(videores, videores, RGB);
+  flob = new Flob(this, videores, videores, width, height);
+  flob.setOm(om);  
   flob.setThresh(tresh);
   flob.setSrcImage(videotex);
   flob.settrackedBlobLifeTime(5);  
@@ -42,7 +46,8 @@ void setup(){
 void draw(){
   if(video.available()) {
     video.read();
-    blobs = flob.track(  flob.binarize(video) );    
+    videoinput.copy(video, 0, 0, 320, 240, 0, 0, videores, videores);
+    blobs = flob.track(  flob.binarize(videoinput) );    
   }
   image(flob.getSrcImage(), 0, 0, width, height);
 
@@ -72,7 +77,8 @@ void draw(){
   rect(5,5,flob.getPresencef()*width,10);
   String stats = ""+frameRate+"\nflob.numblobs: "+blobs.size()+"\nflob.thresh:"+tresh+
                  " <t/T>"+"\nflob.fade:"+fade+"   <f/F>"+"\nflob.om:"+flob.getOm()+
-                 "\nflob.image:"+videotex+"\nflob.presence:"+flob.getPresencef();
+                 "\nflob.image:"+videotex+"\nflob.presence:"+flob.getPresencef()
+                 +"\npress space to clear background";
   fill(0,255,0);
   text(stats,5,25);
 
@@ -82,10 +88,8 @@ void draw(){
 void keyPressed(){
   if(key=='b')
     drawimg^=true;
-  if (key=='S')
-    video.settings();
   if (key=='s')
-    saveFrame("monoflob-######.png");
+    saveFrame("flobtrack-######.png");
   if (key=='i'){  
     videotex = (videotex+1)%4;
     flob.setImage(videotex);
@@ -111,7 +115,7 @@ void keyPressed(){
     flob.setOm(om);
   }   
   if(key==' ') //space clear flob.background
-    flob.setBackground(video);
+    flob.setBackground(videoinput);
  
 }
 

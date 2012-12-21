@@ -1,40 +1,27 @@
 /*
 
  flob linux
- simple flob example using gsvideo by andres colubri
- tested and run on linux ubuntu 10.04, ubuntu 11.04 64-bits
+ simple flob linux testing processing.video sketch
  
- andre sier, 2010
+ sketch should actually run on linux, osx + windows
+ courtesy by the great work done under the hood at processing.video.*; 
  
- */
-
-
-
-/*
-
- flob - A fast multi-blob detector and tracker using flood-fill algorithms
- http://s373.net/code/flob
- copyright © André Sier 2008-2010
- 
- steps:
- 
- 	0. construct a flob object with video, width and height: 
- 	   sets desired world coordinate return values for data
- 	1. configure tracker (setOm, setTresh, setFade, setMirror, setBlur, setSrcImage, ...)
- 	2. when new video frame arrives, pass it to binarize and the to one of the tracking 
- 	   methods available, which returns an ArrayList with the blobs
- 	3. access each blob individually and plug in the values from there to your program
+ andré sier, 2012
  
  */
+
+
+
 
 import processing.opengl.*;
-import codeanticode.gsvideo.*;
+import processing.video.*;
 import s373.flob.*;
 
 
-GSCapture video;    // GSCapture video capture
+Capture video;    // Capture video capture
 Flob flob;        // flob tracker instance
 ArrayList blobs=new ArrayList();  // an ArrayList to hold the gathered blobs
+PImage videoinput;// a downgraded image to flob as input
 
 /// config params
 int tresh = 20;   // adjust treshold value here or keys t/T
@@ -44,32 +31,29 @@ int videores=64;//64//256
 String info="";
 PFont font;
 float fps = 60;
-int videotex = 0; //case 0: videotex = videoimg;//case 1: videotex = videotexbin; 
-//case 2: videotex = videotexmotion//case 3: videotex = videoteximgmotion;
-PImage vrImage;
+int videotex = 0;
 
 
 void setup() {
   size(700, 500, OPENGL);
   frameRate(fps);
   rectMode(CENTER);
-  video = new GSCapture(this, 320, 240);//, (int)fps);  
-  video.play();
+  video = new Capture(this, 320, 240);//, (int)fps);  
+  video.start();
 
-  // downscale image to ease flob processing load
-  vrImage = createImage(videores, videores, RGB);
+  // create one image with the dimensions you want flob to run at
+  videoinput = createImage(videores, videores, RGB);
+
   // init blob tracker
   // flob uses construtor to specify srcDimX, srcDimY, dstDimX, dstDimY
   // srcDim should be video input dimensions
   // dstDim should be desired output dimensions  
-  //  flob = new Flob(video, width,height);
-  flob = new Flob(vrImage, this); 
-  // flob = new Flob(videores, videores, width, height);
+  flob = new Flob(this, videoinput); 
 
-  flob.setThresh(tresh).setSrcImage(videotex).setBackground(vrImage)
-    .setBlur(0).setOm(1).setFade(fade).setMirror(true, false);
+  flob.setThresh(tresh).setSrcImage(videotex).setBackground(videoinput)
+   .setMinNumPix(10).setBlur(0).setOm(1).setFade(fade).setMirror(true, false);
 
-  font = createFont("monaco", 10);
+  font = createFont("monaco", 16);
   textFont(font);
 }
 
@@ -80,9 +64,9 @@ void draw() {
   // main image loop
   if (video.available() == true) {
     video.read();
-    vrImage.copy(video, 0, 0, 320, 240, 0, 0, videores, videores);
+    videoinput.copy(video, 0, 0, 320, 240, 0, 0, videores, videores);
     //image(video, 0, 0, width, height);
-    blobs = flob.calc(flob.binarize(vrImage));
+    blobs = flob.calc(flob.binarize(videoinput));
   }
   image(flob.getSrcImage(), 0, 0, width, height);
 
@@ -90,10 +74,7 @@ void draw() {
   rectMode(CENTER);
   //
   //  //get and use the data
-  int numblobs = blobs.size();//flob.getNumBlobs();  
-  //
-  if (numblobs>0) {
-    for (int i = 0; i < numblobs; i++) {
+    for (int i = 0; i < flob.getNumBlobs(); i++) {
 
       ABlob ab = (ABlob)flob.getABlob(i); 
       //now access all blobs fields.. float tb.cx, tb.cy, tb.dimx, tb.dimy...
@@ -110,13 +91,13 @@ void draw() {
       info = ""+ab.id+" "+ab.cx+" "+ab.cy;
       text(info, ab.cx, ab.cy+20);
     }
-  }
+  
 
   //report presence graphically
   fill(255, 152, 255);
   rectMode(CORNER);
   rect(5, 5, flob.getPresencef()*width, 10);
-  String stats = ""+frameRate+"\nflob.numblobs: "+numblobs+"\nflob.thresh:"+tresh+
+  String stats = ""+frameRate+"\nflob.numblobs: "+flob.getNumBlobs()+"\nflob.thresh:"+tresh+
     " <t/T>"+"\nflob.fade:"+fade+"   <f/F>"+"\nflob.om:"+flob.getOm()+
     "\nflob.image:"+videotex+"\nflob.presence:"+flob.getPresencef();
   fill(0, 255, 0);

@@ -1,26 +1,27 @@
 /*
-  monoflob 
-  (vs. 20090621)
+  sonicmonoflob
+  (vs. 20101220)
   
-  started out as buttons to trigger things, ended up
-  with a nice fade engine in the buttons due to presence
-  this works really sweet connected to soundfile banks gains  
-  loosely inspired from the great and simple monome
+  sonic version of monoflob, here a polyphonic 49 voice synth (7x7 monoflob)
+  where each button has a sine wave you can turn on/off
   
   andré sier 
   http://s373.net
  
  */
+float wavemaxamp = 0.21;
 
 import processing.opengl.*;
 import processing.video.*;
 import s373.flob.*;
-
+import ddf.minim.*;
+import ddf.minim.signals.*;
 /// vars
 Capture video;
 Flob flob; 
-ArrayList blobs;
-
+ArrayList blobs=new ArrayList();
+PImage videoinput;
+boolean buttonOm=true;
 /// video params
 int tresh = 10;
 int fade = 25;//120;
@@ -34,27 +35,35 @@ int colormode = flob.BLUE;
 float fps = 60;
 
 Monoflob mono;
+Minim minim;
+AudioOutput out;
 
 void setup(){
-  //bug 882 processing 1.0.1
-  try { quicktime.QTSession.open(); } 
-  catch (quicktime.QTException qte) { qte.printStackTrace(); }
+//  //bug 882 processing 1.0.1
+//  try { quicktime.QTSession.open(); } 
+//  catch (quicktime.QTException qte) { qte.printStackTrace(); }
 
   size(700,700,OPENGL);
   frameRate(fps);
   rectMode(CENTER);
 
-  video = new Capture(this, videores, videores, (int)fps);  
-  flob = new Flob(video, this); 
+  video = new Capture(this, 320, 240, (int)fps); 
+  video.start();
+  
+  videoinput = createImage(videores, videores, RGB);
+  flob = new Flob(this, videoinput); 
 
   flob.setTresh(tresh).setImage(videotex).setMirror(true,false);
   flob.setOm(1).setFade(fade).setMinNumPixels(20).setMaxNumPixels(500);
   flob.setColorMode(colormode);
 
-  font = createFont("monaco",9);
+  font = createFont("monaco",16);
   textFont(font);
 
-  mono = new Monoflob(4,4);
+  minim = new Minim(this);  
+  out = minim.getLineOut(Minim.STEREO);
+
+  mono = new Monoflob(7,7);
   //(20,20);//(10,10);//(3,3);//(5,4);
 }
 
@@ -64,7 +73,8 @@ void draw(){
 
   if(video.available()) {
     video.read();
-    blobs = flob.calc(flob.binarize(video));    
+    videoinput.copy(video, 0, 0, 320, 240, 0, 0, videores, videores);
+    blobs = flob.calc(flob.binarize(videoinput));    
   }
 
   if(drawimg)
@@ -91,7 +101,8 @@ void draw(){
   rect(5,5,flob.getPresencef()*width,10);
   String stats = ""+frameRate+"\nflob.numblobs: "+numblobs+"\nflob.thresh:" +tresh+
                  " <t/T>"+"\nflob.fade: "+fade+"   <f/F>"+"\nflob.om: "+flob.getOm()+
-                 "\nflob.image: "+videotex+"\nflob.colormode: "+flob.getColorMode()+"\nflob.presence:"+flob.getPresencef();
+                 "\nflob.image: "+videotex+"\nflob.colormode: "+flob.getColorMode()+"\nflob.presence:"+flob.getPresencef()
+                 +"\nbuttonOm: "+buttonOm +" (b)";
   fill(0,255,0);
   text(stats,5,25);
 
@@ -100,9 +111,7 @@ void draw(){
 
 void keyPressed(){
   if(key=='b')
-    drawimg^=true;
-  if (key=='S')
-    video.settings();
+    buttonOm^=true;
   if (key=='s')
     saveFrame("monoflob-######.png");
   if (key=='i'){  
@@ -134,8 +143,10 @@ void keyPressed(){
     flob.setColorMode(colormode);
   }   
  if(key==' ') //space clear flob.background
-    flob.setBackground(video);
+    flob.setBackground(videoinput);
 }
 
 
-
+float mtof(float midi){  
+  return  (440.0f * pow(2, ((midi-69.0) / 12.0)) );  
+}

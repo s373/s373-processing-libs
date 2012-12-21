@@ -19,6 +19,34 @@ Free Software Foundation, Inc., 59 Temple Place, Suite 330,
 Boston, MA  02111-1307  USA
  */
 
+/**
+ * flob
+ * Fast multi-blob detector and simple skeleton tracker using flood-fill algorithms.
+ * http://s373.net/code/flob
+ *
+ * Copyright (C) 2008-2012 André Sier http://s373.net
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General
+ * Public License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
+ * Boston, MA  02111-1307  USA
+ * 
+ * @author      André Sier http://s373.net
+ * @modified    12/21/2012
+ * @version     0.2.1x (21)
+ */
+
+
 package s373.flob;
 
 import java.io.File;
@@ -29,6 +57,7 @@ import java.util.Date;
 import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PImage;
+
 
 /**
  * 
@@ -47,6 +76,11 @@ public class Flob {
 
 	public PApplet app;
 
+	// floating point new stuff notup yet
+	public float[] backgroundPixelsF;
+	public float[] currentPixelsF;
+	public float[] differencePixelsF;
+
 	public ImageBlobs imageblobs;
 	public PImage videoimg;
 	public PImage videotex;
@@ -61,8 +95,10 @@ public class Flob {
 	public int videotexmode, pvideotexmode = 10000;
 	public boolean videotexchange = true;
 
-	public int videothresh = 50;
-	public int videofade = 50; // only in continuous dif
+	// public int videothresh = 50;
+	public float videothresh = 50;
+	// public int videofade = 50; // only in continuous dif
+	public float videofade = 50; // only in continuous dif
 	public boolean mirrorX, mirrorY;
 	public int worldwidth, worldheight;
 	public boolean coordsmode = true;
@@ -97,8 +133,7 @@ public class Flob {
 
 	public static int trackedBlobLifeTime = 5; // 60
 
-	// PApplet myParent; // reference to the PApplet
-	public static String VERSION = "flob 0.0.1v - built ";
+	public static String VERSION = "flob 0.2.1x - built ";
 
 	public Flob(PApplet theParent) {
 		app = theParent;
@@ -162,13 +197,9 @@ public class Flob {
 
 	void setup() {
 		trackfeatures = new boolean[5];
-		for (int i = 0; i < 5; i++)
+		for (int i = 0; i < 5; i++) {
 			trackfeatures[i] = false;
-		// videoimg = new PImage(videoresw, videoresh);
-		// videotexbin = new PImage(videoresw, videoresh);
-		// videotexmotion = new PImage(videoresw, videoresh);
-		// videoteximgmotion = new PImage(videoresw, videoresh);
-		// videotex = new PImage(videoresw, videoresh);
+		}
 		videoimg = app.createImage(videoresw, videoresh, PConstants.RGB);
 		videotexbin = app.createImage(videoresw, videoresh, PConstants.RGB);
 		videotexmotion = app.createImage(videoresw, videoresh, PConstants.RGB);
@@ -177,14 +208,19 @@ public class Flob {
 		videotex = app.createImage(videoresw, videoresh, PConstants.RGB);
 		numPixels = videoresw * videoresh;
 		backgroundPixels = new int[numPixels];
+		// fbake float engine
+		backgroundPixelsF = new float[numPixels];
+		currentPixelsF = new float[numPixels];
+		differencePixelsF = new float[numPixels];
+
 		imageblobs = new ImageBlobs(this);// pass flob pointer
-											// //videoresw,videoresh,
-											// worldwidth, worldheight);
+
 		version();
 	}
 
 	public PImage binarize(int pix[]) {
-		PImage img = new PImage(videoresw, videoresh);
+		// PImage img = new PImage(videoresw, videoresh);
+		PImage img = app.createImage(videoresw, videoresh, PConstants.RGB);
 		img.pixels = pix;
 		return binarize(img);
 	}
@@ -261,12 +297,19 @@ public class Flob {
 		videoimg.loadPixels();
 
 		int currentVal = 0, backgroundVal = 0, diffVal = 0;
+		// float currentValf = 0, backgroundValf = 0, diffValf = 0;
+		float diffValf = 0;
+
+		float fease = 0.17f;
 
 		if (om == STATIC_DIFFERENCE) {
 
 			for (int i = 0; i < numPixels; i++) {
 				int currColor = videoimg.pixels[i];
 				int bkgdColor = backgroundPixels[i];
+
+				// currentValf = backgroundPixelsF[i];
+				// backgroundValf = backgroundPixelsF[i];
 
 				switch (colormode) {
 				case RED:
@@ -314,10 +357,18 @@ public class Flob {
 
 				}
 
+				backgroundPixelsF[i] += (backgroundVal - backgroundPixelsF[i])
+						* fease;
+				currentPixelsF[i] += (currentVal - currentPixelsF[i]) * fease;
+
 				diffVal = Math.abs(currentVal - backgroundVal);
+				diffValf = Math.abs(currentPixelsF[i] - backgroundPixelsF[i]);
+
+				differencePixelsF[i] = diffValf;
 
 				int binarize = 0;
-				if (diffVal > videothresh) {
+				// if (diffVal > videothresh) {
+				if (diffValf > videothresh) {
 					presence += 1;
 					binarize = 255;
 				}
@@ -382,9 +433,16 @@ public class Flob {
 					break;
 				}
 
+				backgroundPixelsF[i] += (backgroundVal - backgroundPixelsF[i])
+						* fease;
+				currentPixelsF[i] += (currentVal - currentPixelsF[i]) * fease;
+
 				diffVal = Math.abs(currentVal - backgroundVal);
+				diffValf = Math.abs(currentPixelsF[i] - backgroundPixelsF[i]);
+				differencePixelsF[i] = diffValf;
+
 				int binarize = 0;
-				if (diffVal > videothresh) {
+				if (diffValf > videothresh) {
 					presence += 1;
 					binarize = 255;
 				}
@@ -394,14 +452,29 @@ public class Flob {
 			}
 
 			// now update motion img and use that as base for tracking
+
 			videotexmotion.loadPixels();
+
 			for (int i = 0; i < numPixels; i++) {
-				int value = (videotexmotion.pixels[i] >> 8) & 0xff;
-				value -= videofade; // minus fade
-				value += (videotexbin.pixels[i] >> 8) & 0xff; // + binary
-				value = value < 0 ? 0 : value > 255 ? 255 : value;
+
+				float valf = differencePixelsF[i];
+				// int value = (videotexmotion.pixels[i] >> 8) & 0xff;
+				valf -= videofade; // minus fade
+				// TODO: 
+				valf += (videotexbin.pixels[i] >> 8) & 0xff; // + binary
+				valf = valf < 0 ? 0 : valf > 255 ? 255 : valf;
+				int value = Math.round(valf);
 				videotexmotion.pixels[i] = (value << 24) | (value << 16)
 						| (value << 8) | value;
+
+				// // previous main int only methodo
+
+				// int value = (videotexmotion.pixels[i] >> 8) & 0xff;
+				// value -= videofade; // minus fade
+				// value += (videotexbin.pixels[i] >> 8) & 0xff; // + binary
+				// value = value < 0 ? 0 : value > 255 ? 255 : value;
+				// videotexmotion.pixels[i] = (value << 24) | (value << 16)
+				// | (value << 8) | value;
 			}
 
 			videoimg.updatePixels();
@@ -739,7 +812,7 @@ public class Flob {
 	 * 
 	 * @return this
 	 */
-	public Flob setTresh(int t) {
+	public Flob setTresh(float t) {
 		videothresh = t;
 		return this;
 	}
@@ -749,7 +822,7 @@ public class Flob {
 	 * 
 	 * @return this
 	 */
-	public Flob setThresh(int t) {
+	public Flob setThresh(float t) {
 		videothresh = t;
 		return this;
 	}
@@ -759,7 +832,7 @@ public class Flob {
 	 * 
 	 * @return int
 	 */
-	public int getThresh() {
+	public float getThresh() {
 		return videothresh;
 	}
 
@@ -768,7 +841,7 @@ public class Flob {
 	 * 
 	 * @return this
 	 */
-	public Flob setFade(int t) {
+	public Flob setFade(float t) {
 		videofade = t;
 		return this;
 	}
@@ -778,7 +851,7 @@ public class Flob {
 	 * 
 	 * @return int
 	 */
-	public int getFade() {
+	public float getFade() {
 		return videofade;
 	}
 
@@ -1458,20 +1531,20 @@ public class Flob {
 	 * @return String
 	 */
 	public String version() {
-
+		String post = "";
 		try {
 			// http://www.neowin.net/forum/index.php?showtopic=746508
 			File jarFile = new File(this.getClass().getProtectionDomain()
 					.getCodeSource().getLocation().toURI());
-			VERSION = "\n" + VERSION + new Date(jarFile.lastModified())
+			post = "\n" + VERSION + new Date(jarFile.lastModified())
 					+ " - http://s373.net/code/flob \n\n";
 
 		} catch (URISyntaxException e1) {
 			System.out.print("flob couldnt access file version. " + e1);
 		}
 
-		System.out.print(VERSION);
-		return VERSION;
+		System.out.print(post);
+		return post;
 	}
 
 }

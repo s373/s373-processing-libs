@@ -6,15 +6,16 @@
  to calc the blobs. blobs are detected for collision,
  and if true, some nice ellastic collision is applied
  
- teclas: espaço, o, i, v
- 
+ teclas/keys: espaço/space, o, i, v 
  */
+
 import processing.opengl.*;
 import processing.video.*;
 import s373.flob.*;
 
 Capture video;
 Flob flob; 
+PImage videoinput;
 
 
 int videores=128;
@@ -30,25 +31,25 @@ int vtex=0;
 
 
 void setup(){
-  //bug 882 processing 1.0.1
-  try { 
-    quicktime.QTSession.open(); 
-  } 
-  catch (quicktime.QTException qte) { 
-    qte.printStackTrace(); 
-  }
 
   size(640,480,OPENGL);
   frameRate(fps);
 
-  String[] devices = Capture.list();
-  println(devices);
+//  String[] devices = Capture.list();
+//  println(devices);
 
-  video = new Capture(this, videores, videores, fps);  
-  flob = new Flob(video, width, height);
+  video = new Capture(this, 320, 240, fps);
+  video.start();
+  
+    // create one image with the dimensions you want flob to run at
+  videoinput = createImage(videores, videores, RGB);
+
+  // construct flob
+  flob = new Flob(this,videores,videores, width, height);
+  
   flob.setMirror(true,false);
-  flob.setThresh(12);
-  flob.setFade(25);
+  flob.setThresh(10);
+  flob.setFade(5);
   flob.setMinNumPixels(10);
   flob.setImage( vtex );
 
@@ -71,12 +72,15 @@ void draw(){
       omset=true;
     }
     video.read();
-
+    
+    //downscale video image to videoinput pimage
+     videoinput.copy(video,0,0,320,240,0,0,videores,videores);
+     
     // aqui é que se define o método calc, calcsimple, ou tracksimple
     // o tracksimple é mais preciso mas mais pesado que o calcsimple
 
     //    flob.tracksimple(  flob.binarize(video) ); 
-    flob.calcsimple(  flob.binarize(video) ); 
+    flob.calcsimple(  flob.binarize(videoinput) ); 
   }
 
   image(flob.getSrcImage(), 0, 0, width, height);
@@ -136,7 +140,7 @@ void draw(){
 
 void keyPressed(){
   if(key==' ')
-    flob.setBackground(video); 
+    flob.setBackground(videoinput); 
   if(key=='o'){
     om^=true; 
     omset=false;

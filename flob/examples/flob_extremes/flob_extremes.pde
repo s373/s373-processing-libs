@@ -23,7 +23,7 @@ import s373.flob.*;
 Capture video;    // processing video capture
 Flob flob;        // flob tracker instance
 ArrayList blobs;  // an ArrayList to hold the gathered blobs
-
+PImage videoinput;
 /// config params
 int tresh = 20;   // adjust treshold value here or keys t/T
 int fade = 25;
@@ -38,34 +38,29 @@ int videotex = 3; //case 0: videotex = videoimg;//case 1: videotex = videotexbin
 
 
 void setup() {
-  // osx quicktime bug 882 processing 1.0.1
-  try { 
-    quicktime.QTSession.open();
-  } 
-  catch (quicktime.QTException qte) { 
-    qte.printStackTrace();
-  }
+
 
   size(700,500,OPENGL);
   frameRate(fps);
   rectMode(CENTER);
   // init video data and stream
-  video = new Capture(this, videores, videores, (int)fps);  
+  video = new Capture(this, 320, 240, (int)fps); 
+  video.start();
+  
   // init blob tracker
 
   // flob uses construtor to specify srcDimX, srcDimY, dstDimX, dstDimY
   // srcDim should be video input dimensions
   // dstDim should be desired output dimensions  
-  flob = new Flob(video, width,height);
-  flob = new Flob(video, this); 
-  flob = new Flob(videores, videores, width, height);
+  videoinput = createImage(videores, videores, RGB);
+  flob = new Flob(this, videoinput, width,height);
 
   flob.setTresh(tresh); //set the new threshold to the binarize engine
   flob.setThresh(tresh); //typo
   flob.setSrcImage(videotex);
   flob.setImage(videotex); //  pimage i = flob.get(Src)Image();
 
-  flob.setBackground(video); // zero background to contents of video
+  flob.setBackground(videoinput); // zero background to contents of video
   flob.setBlur(0); //new : fastblur filter inside binarize
   flob.setMirror(true,false);
   flob.setOm(0); //flob.setOm(flob.STATIC_DIFFERENCE);
@@ -73,11 +68,11 @@ void setup() {
   flob.setFade(fade); //only in continuous difference
 
   /// or now just concatenate messages
-  flob.setThresh(tresh).setSrcImage(videotex).setBackground(video)
+  flob.setThresh(tresh).setSrcImage(videotex).setBackground(videoinput)
   .setBlur(0).setOm(1).setFade(fade).setMirror(true,false);;
 
 
-  font = createFont("monaco",9);
+  font = createFont("monaco",16);
   textFont(font);
   blobs = new ArrayList();
 }
@@ -89,7 +84,8 @@ void draw() {
   // main image loop
   if(video.available()) {
      video.read();
-     blobs = flob.calc(flob.binarize(video));
+     videoinput.copy(video, 0, 0, 320, 240, 0, 0, videores, videores);
+     blobs = flob.calc(flob.binarize(videoinput));
   }
 
   image(flob.getSrcImage(), 0, 0, width, height);
@@ -141,10 +137,6 @@ void draw() {
 
 void keyPressed() {
 
-  if (key=='S')
-    video.settings();
-  if (key=='s')
-    saveFrame("flob001s-######.png");
   if (key=='i') {  
     videotex = (videotex+1)%4;
     flob.setImage(videotex);
@@ -170,6 +162,6 @@ void keyPressed() {
     flob.setOm(om);
   }   
   if(key==' ') //space clear flob.background
-    flob.setBackground(video);
+    flob.setBackground(videoinput);
 }
 

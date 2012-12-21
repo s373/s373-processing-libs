@@ -5,6 +5,8 @@ class Botao {
   int gain; 
   boolean on = false;
   boolean touch = false;
+  
+  SineWave wave;
 
   Botao(int i,  float _x, float _y, float _w , float _h  ) {
     id = i;
@@ -16,6 +18,10 @@ class Botao {
     h2 = h*0.5f;    
     coroff = color(50);
     coron = color(0,250,0);
+    
+    wave = new SineWave( mtof(27+i*3) , 0.25, out.sampleRate());
+    wave.portamento(477);
+    out.addSignal(wave);
   } 
 
 
@@ -42,6 +48,12 @@ class Botao {
       on = false;
     if(gain<0)
       gain=0;
+      
+    if(buttonOm){
+      if(on) { wave.setAmp(wavemaxamp); } else { wave.setAmp(0); }
+    } else{
+      wave.setAmp(map(gain,0,100,0.,wavemaxamp));
+    }  
   }
 
   void render(){

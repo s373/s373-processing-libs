@@ -19,8 +19,8 @@ import s373.flob.*;
 /// vars
 Capture video;
 Flob flob; 
-ArrayList blobs;
-
+ArrayList blobs=new ArrayList();
+PImage videoinput;
 /// video params
 int tresh = 10;
 int fade = 25;//120;
@@ -36,22 +36,25 @@ float fps = 60;
 Monoflob mono;
 
 void setup(){
-  //bug 882 processing 1.0.1
-  try { quicktime.QTSession.open(); } 
-  catch (quicktime.QTException qte) { qte.printStackTrace(); }
+//  //bug 882 processing 1.0.1
+//  try { quicktime.QTSession.open(); } 
+//  catch (quicktime.QTException qte) { qte.printStackTrace(); }
 
   size(700,700,OPENGL);
   frameRate(fps);
   rectMode(CENTER);
 
-  video = new Capture(this, videores, videores, (int)fps);  
-  flob = new Flob(video, this); 
+  video = new Capture(this, 320, 240, (int)fps); 
+  video.start();
+  
+  videoinput = createImage(videores, videores, RGB);
+  flob = new Flob(this, videoinput); 
 
   flob.setTresh(tresh).setImage(videotex).setMirror(true,false);
   flob.setOm(1).setFade(fade).setMinNumPixels(20).setMaxNumPixels(500);
   flob.setColorMode(colormode);
 
-  font = createFont("monaco",9);
+  font = createFont("monaco",16);
   textFont(font);
 
   mono = new Monoflob(4,4);
@@ -64,7 +67,8 @@ void draw(){
 
   if(video.available()) {
     video.read();
-    blobs = flob.calc(flob.binarize(video));    
+    videoinput.copy(video, 0, 0, 320, 240, 0, 0, videores, videores);
+    blobs = flob.calc(flob.binarize(videoinput));    
   }
 
   if(drawimg)
@@ -101,8 +105,6 @@ void draw(){
 void keyPressed(){
   if(key=='b')
     drawimg^=true;
-  if (key=='S')
-    video.settings();
   if (key=='s')
     saveFrame("monoflob-######.png");
   if (key=='i'){  
@@ -134,7 +136,7 @@ void keyPressed(){
     flob.setColorMode(colormode);
   }   
  if(key==' ') //space clear flob.background
-    flob.setBackground(video);
+    flob.setBackground(videoinput);
 }
 
 

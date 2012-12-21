@@ -1,4 +1,4 @@
-float drag = 0.957;
+float drag = 0.9757;
 class Part {
   float x, y, vx, vy, ax, ay;
   float px,py,force;
