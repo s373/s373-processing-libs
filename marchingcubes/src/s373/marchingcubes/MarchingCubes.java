@@ -1,16 +1,28 @@
+
+/*
+ marching cubes implementation by andre sier in processing, 2010
+ 	http://s373.net/code/marchingcubes
+ adapted code from paul bourke's polygonizing a scale field (marching cubes), 
+ 	http://paulbourke.net/geometry/polygonise/
+ stl export code adapted from marius watz, 
+ 	http://workshop.evolutionzone.com/unlekkerlib/
+ */
+
+
+
 package s373.marchingcubes;
+
+
+import s373.marchingcubes.GRIDCELL;
+import s373.marchingcubes.XYZ;
+import s373.marchingcubes.TRIANGLE;
+import s373.marchingcubes.RndUtils;
 
 import java.io.*;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
-
-/*
- marching cubes implementation by andré sier
- from copy pasting paul bourke, with slight changes,
- stl export code from marius watz
- */
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -43,10 +55,9 @@ public class MarchingCubes {
 	// file data
 	public String filename;
 	public File file;
-	// boolean ignoreShape=false, isDisposed=false;
-	// float mult=1;
 	public byte[] header, byte4;
 	public ByteBuffer buf;
+
 
 	public MarchingCubes(PApplet pa, float sx, float sy, float sz, int x,
 			int y, int z) {
@@ -66,18 +77,6 @@ public class MarchingCubes {
 
 	}
 
-//	public MarchingCubes(int x, int y, int z) {
-//		initResolution(x, y, z);
-//		setWorldDim(1000, 600, -600);
-//
-//		triangles = new TRIANGLE[10];
-//		for (int i = 0; i < 10; i++) {
-//			triangles[i] = new TRIANGLE();
-//		}
-//		isolevel = 0.0025f;
-//		grid = new GRIDCELL();
-//	}
-
 	public void setWorldDim(float x, float y, float z) {
 		worlddim = new XYZ(x, y, z);
 		worldstride = new XYZ(gx / x, gy / y, gz / z);
@@ -90,7 +89,6 @@ public class MarchingCubes {
 				+ " " + worldstride.z + "\n");
 		System.out.print("datastride: " + datastride.x + " " + datastride.y
 				+ " " + datastride.z + "\n");
-
 	}
 
 	public void initResolution(int x, int y, int z) {
@@ -99,7 +97,6 @@ public class MarchingCubes {
 		gz = z;
 		gxgy = x * y;
 		numxyz = x * y * z;
-//		System.out.print(getinfo());// "marching volume: "+x+" "+y+" "+z+" total: "+numxyz);
 		data = new float[numxyz];
 		for (int i = 0; i < numxyz; i++) {
 			data[i] = RndUtils.random(0.0f, 0.7f);
@@ -108,8 +105,6 @@ public class MarchingCubes {
 	}
 
 	public String getinfo() {
-//		info = "s373.marchingcubes: tris: " + ntri + " volume: " + gx + " " + gy
-//		+ " " + gz + " cells: " + numxyz + " iso: " + isolevel;
 		info = "tris: " + ntri + " volume: " + gx + " " + gy
 		+ " " + gz + " cells: " + numxyz + " iso: " + isolevel;
 		return info;
@@ -125,7 +120,7 @@ public class MarchingCubes {
 	 */
 	
 	public final int getIndex(XYZ ptpos){
-		int cx = (int) (ptpos.x * worldstride.x); // // width * gx);
+		int cx = (int) (ptpos.x * worldstride.x);
 		int cy = (int) (ptpos.y * worldstride.y);
 		int cz = (int) (ptpos.z * worldstride.z);
 		if (closesides) {
@@ -286,45 +281,26 @@ public class MarchingCubes {
 	}
 
 	public void setRndData(float mn, float mx) {
-//		themin = (float) 1e10;
-//		themax = (float) -1e10;
 		for (int i = 0; i < numxyz; i++) {
 			data[i] = RndUtils.random(mn, mx);
-//			if (data[i] > themax) {
-//				themax = data[i];
-//			}
-//			if (data[i] < themin) {
-//				themin = data[i];
-//			}
+		}
+	}
+	public void setRndData(float mx) {
+		for (int i = 0; i < numxyz; i++) {
+			data[i] = RndUtils.random(mx);
 		}
 	}
 
 	public void setData(float d[]) {
-//		themin = (float) 1e10;
-//		themax = (float) -1e10;
 		for (int i = 0; i < numxyz; i++) {
 			data[i] = d[i];
-//			if (data[i] > themax) {
-//				themax = data[i];
-//			}
-//			if (data[i] < themin) {
-//				themin = data[i];
-//			}
 		}
 	}
 
 	public void addData(float d[]) {
-////add close sides here
-//		themin = (float) 1e10;
-//		themax = (float) -1e10;
+////phps add close sides here
 		for (int i = 0; i < numxyz; i++) {
 			data[i] += d[i];
-//			if (data[i] > themax) {
-//				themax = data[i];
-//			}
-//			if (data[i] < themin) {
-//				themin = data[i];
-//			}
 		}
 	}
 
@@ -459,22 +435,14 @@ public class MarchingCubes {
 					// calc tri norms
 					for (int a0 = 0; a0 < n; a0++) {
 						triangles[a0].calcnormal(invertnormals);
-						// print(".");
 					}
 
-					// int n = 0;
-					// tri = realloc(tri,(ntri+n)*sizeof(TRIANGLE));
-
-					// TRIANGLE temptri[] = new TRIANGLE[n];
-					// tri = (TRIANGLE[]) append(tri, temptri);
 
 					for (int l = 0; l < n; l++) {
 						final TRIANGLE t = new TRIANGLE(triangles[l]);
 						trilist.add(t);
-						// tri[ntri+l] = triangles[l];
 					}
 					ntri += n;
-					// print(" "+n);
 				}
 			}
 		}
@@ -500,11 +468,10 @@ public class MarchingCubes {
 
 	public void draw() {// PApplet applet) {
 
-		// println("draw ntri "+trilist.size());
 		for (int i = 0; i < trilist.size(); i++) {
 			final TRIANGLE tri = trilist.get(i);
 			applet.beginShape(PConstants.TRIANGLES);
-			// normal((float)tri.n.x, (float)tri.n.y, (float)tri.n.z);
+			applet.normal((float)tri.n.x, (float)tri.n.y, (float)tri.n.z);
 			applet.vertex(tri.p[0].x, tri.p[0].y, tri.p[0].z);
 			applet.vertex(tri.p[1].x, tri.p[1].y, tri.p[1].z);
 			applet.vertex(tri.p[2].x, tri.p[2].y, tri.p[2].z);
@@ -531,16 +498,12 @@ public class MarchingCubes {
 			applet.vertex(x + tri.n.x * s, y + tri.n.y * s, z + tri.n.z * s);
 			applet.endShape();
 
-			// triangle((float)tri[i].p[0].x, tri[i].p[0].y, tri[i].p[0].z,
-			// tri[i].p[1].x, tri[i].p[1].y, tri[i].p[1].z,
-			// tri[i].p[2].x, tri[i].p[2].y, tri[i].p[2].z);
 		}
 	}
 
 	
 	public void drawsize(float s) {// PApplet applet) {
 
-//		float ax = applet.map(, istart, istop, ostart, ostop)
 		
 		float c = s / worldstride.x;///applet.map(s, istart, istop, ostart, ostop)
 		
@@ -554,15 +517,11 @@ public class MarchingCubes {
 			applet.vertex(tri.p[2].x*c, tri.p[2].y*c, tri.p[2].z*c);
 			applet.endShape();
 
-			// triangle((float)tri[i].p[0].x, tri[i].p[0].y, tri[i].p[0].z,
-			// tri[i].p[1].x, tri[i].p[1].y, tri[i].p[1].z,
-			// tri[i].p[2].x, tri[i].p[2].y, tri[i].p[2].z);
 		}
 	}
 
 	public void drawnormalssize(float siz, float s) {// PApplet applet, float s) {
 
-		// println("draw ntri "+trilist.size());
 		for (int i = 0; i < trilist.size(); i++) {
 			final TRIANGLE tri = trilist.get(i);
 			final float x = (tri.p[0].x + tri.p[1].x + tri.p[2].x) / 3.0f;
@@ -575,9 +534,6 @@ public class MarchingCubes {
 			applet.vertex(x + tri.n.x * s, y + tri.n.y * s, z + tri.n.z * s);
 			applet.endShape();
 
-			// triangle((float)tri[i].p[0].x, tri[i].p[0].y, tri[i].p[0].z,
-			// tri[i].p[1].x, tri[i].p[1].y, tri[i].p[1].z,
-			// tri[i].p[2].x, tri[i].p[2].y, tri[i].p[2].z);
 		}
 	}
 	
@@ -614,12 +570,6 @@ public class MarchingCubes {
 //	   gl.glBindTexture(GL.GL_TEXTURE_2D, tex[0]);
 //
 //
-//	   for(int i = 0; i < galaxy.length; i++) {    
-//	     galaxy[i].update();
-//	     //galaxy[i].acc = new PVector();//zero acc
-//	     galaxy[i].draw();
-//	   }
-//
 //	   // gl.glDisable(GL.GL_TEXTURE_2D);
 //
 //	    
@@ -631,16 +581,6 @@ public class MarchingCubes {
 //	    
 //	    
 //	    
-//	    // new Star interaction with galactic centers
-//	    for(int i = 0; i < stars.length; i++) {
-//	      stars[i].update();
-//	      
-//	      pointBuffer.put(i*3, stars[i].posx);
-//	      pointBuffer.put(i*3+1, stars[i].posy);
-//	      pointBuffer.put(i*3+2, stars[i].posz);
-//
-//	      
-//	     // stars[i].draw();
 //	    }
 //
 //	    gl.glEnableClientState(GL.GL_VERTEX_ARRAY);
@@ -1145,13 +1085,20 @@ public class MarchingCubes {
 		}
 	}
 
+	
 	public void writeStl(String filestr) {
+		String path = applet.sketchPath + "/stlexport";
+		writeStl(path, filestr);
+	}
+			
+	public void writeStl(String path, String filestr) {
 		try {
-			file = (new File(filestr));
-			// file.mkdirs();
-			filename = filestr;
 
-			final FileOutputStream out = new FileOutputStream(file);
+			(new File(path)).mkdirs();
+			
+			filename = path + "/"+filestr;
+
+			final FileOutputStream out = new FileOutputStream(filename);
 
 			header = new byte[80];
 
