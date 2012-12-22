@@ -1,3 +1,4 @@
+package s373.boids;
 //package s373.boids;
 //
 //public class Team {

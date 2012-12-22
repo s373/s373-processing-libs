@@ -2,7 +2,6 @@ package s373.boids;
 
 import java.util.ArrayList;
 
-//import s373.math.s373Math;
 
 public class Flock2d {
 
@@ -25,6 +24,10 @@ public class Flock2d {
 	}
 
 	public Flock2d(int num, float lx, float ly, float dev) {
+		init(num, lx, ly, dev);
+	}
+
+	public void init(int num, float lx, float ly, float dev) {
 		boids = new ArrayList<Boid2d>();
 		attractionPoints = new ArrayList<AttractionPoint2d>();
 
@@ -38,6 +41,7 @@ public class Flock2d {
 		}
 
 		defaultValues();
+
 	}
 
 	private void defaultValues() {

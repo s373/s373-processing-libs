@@ -1,7 +1,7 @@
 
 
 import s373.cellularautomata.*;
-import processing.opengl.*;
+
 import ddf.minim.*;
 import ddf.minim.signals.*;
 
@@ -16,7 +16,7 @@ float sx,sy;
 
 
 void setup() {
-  size(700,700,OPENGL);  
+  size(700,700);  
   
   minim = new Minim(this);  
   out = minim.getLineOut(Minim.STEREO);

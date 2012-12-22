@@ -1,10 +1,10 @@
 import s373.cellularautomata.*;
-import processing.opengl.*;
+
 
 CA2d automata;
 
 void setup() { 
-  size(300,300,OPENGL);
+  size(300,300);
   automata = new CA2d(width,height);
   automata.setRules();
 }

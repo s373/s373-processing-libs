@@ -2,6 +2,7 @@ package s373.boids;
 
 import java.util.Random;
 
+
 public final class RndUtils {
 	/*
 	 * basic random

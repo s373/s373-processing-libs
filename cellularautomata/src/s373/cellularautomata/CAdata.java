@@ -16,14 +16,15 @@ public class CAdata {
 	public int numbit = 10;
 	public int numactive = 0;
 	private Random myrand;
+	private boolean debug = false;
 
 	public void setRules() {
-		System.out.print("rule bin: ");
+		if(debug)System.out.print("rule bin: ");
 		for (int i = 0; i < numbit; i++) {
 			rules[i] = (byte) random(2);
-			System.out.print(rules[i] + " ");
+			if(debug)System.out.print(rules[i] + " ");
 		}
-		System.out.print("\n");
+		if(debug)System.out.print("\n");
 		setCenter1();
 	}
 
@@ -32,8 +33,8 @@ public class CAdata {
 	}
 
 	public void setRules(int rule) {
-		System.out.print("rule set: " + rule + "\n");
-		System.out.print("rule bin: ");
+		if(debug)System.out.print("rule set: " + rule + "\n");
+		if(debug)System.out.print("rule bin: ");
 
 		int num = rule;
 
@@ -41,9 +42,9 @@ public class CAdata {
 			int rem = num % 2;
 			num = num / 2;
 			rules[i] = (byte) rem;
-			System.out.print(rules[i] + " ");
+			if(debug)System.out.print(rules[i] + " ");
 		}
-		System.out.print("\n");
+		if(debug)System.out.print("\n");
 	}
 
 	public int getRule() {
@@ -64,7 +65,7 @@ public class CAdata {
 	}
 
 	public void setCenter1() {
-		System.out.print("CAdata setCenter1 called!: " + "\n");
+		if(debug)System.out.print("CAdata setCenter1 called " + "\n");
 	}
 
 	public void setNumBits(int nbits) {

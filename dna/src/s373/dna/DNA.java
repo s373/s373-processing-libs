@@ -184,7 +184,6 @@ public class DNA {
 		return this;
 	}
 
-	// TODO check this method, float inside loop
 	private DNA crossover3(final DNA dnaparent, final float percent) {
 		final float per0 = percent;
 		final float per1 = 1.0f - percent;
@@ -201,6 +200,33 @@ public class DNA {
 		return this;
 	}
 
+	private void bound(){
+		
+		if(boundsMode == 0) {
+			return;
+		}
+		
+		if (boundsMode == 1) {
+			for(int i=0; i<dna.length;i++) {
+				if (dna[i] > 1)
+					dna[i] = 1;
+				if (dna[i] < 0)
+					dna[i] = 0;
+			}
+		}
+		if (boundsMode == 2) {
+			for(int i=0; i<dna.length;i++) {
+				while (dna[i] > 1)
+					dna[i] -= 1;
+				while (dna[i] < 0)
+					dna[i] += 1;
+			}
+		}
+		
+	}
+
+	
+	
 	/**
 	 * @param gene
 	 * @param dev
