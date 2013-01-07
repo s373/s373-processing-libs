@@ -20,8 +20,8 @@ void draw() {
   float sx = width/s;
   float sy = height/s;
   int layer = (int)map(mouseX,0,width,0,s);
-  for(int j = 0;j<64; j++) {
-    for(int i=0; i<64;i++) {
+  for(int j = 0;j<s; j++) {
+    for(int i=0; i<s;i++) {
       if(automata.getCell3D(i,j,layer) > 0) {
         point(i*sx,j*sy);
       } 
