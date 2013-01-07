@@ -1,22 +1,27 @@
-
+/**
+  1d cellular automaton example
+  
+  keys space & 1-0 set rules
+*/
 
 import s373.cellularautomata.*;
-import processing.opengl.*;
 
-CA1d automata;
+CA1d automata; // 1 1d cellular automata object
 
-int nx=500,ny=500,cy=0;
-float sx,sy;
+int nx=500, // number of cells in 1d automaton
+    ny=500, // number of lines
+    cy=0; // current line
+float sx,sy; // lines to screen ratios
 
 
 void setup() {
-  size(700,700,OPENGL);  
+  size(800,700);  
 
   automata = new CA1d(nx);
   sx = (float)width/(float)nx;
   sy = (float)height/(float)ny;
 
-  automata.setRules(5);
+  automata.setRule(30);
 }
 
 
@@ -25,13 +30,10 @@ void draw() {
 
   // update automata
   automata.update();
-  
-  // get data
-  int data[] = automata.getData();
-  
+    
   // parse data
   for(int i=0; i<nx; i++) {   
-    if(data[i] > 0)
+    if(automata.getCell1D(i) > 0)
       fill(255);
     else
       fill(0);
@@ -48,5 +50,37 @@ void keyPressed() {
   if(key==' ') {
     automata.setRules();
   }
+  if(key=='1') {
+    automata.setRules(110);
+  }
+  if(key=='2') {
+    automata.setRules(30);
+  }
+  if(key=='3') {
+    automata.setRules(28);
+  }
+  if(key=='4') {
+    automata.setRules(50);
+  }
+  if(key=='5') {
+    automata.setRules(60);
+  }
+  if(key=='6') {
+    automata.setRules(90);
+  }
+  if(key=='7') {
+    automata.setRules(94);
+  }
+  if(key=='8') {
+    automata.setRules(102);
+  }
+  if(key=='9') {
+    automata.setRules(220);
+  }
+  if(key=='0') {
+    automata.setRules(73);
+  }
+  
+  println("current rule: "+automata.getRule());
 }
 

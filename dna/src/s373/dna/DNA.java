@@ -26,13 +26,26 @@ public class DNA {
 
 	// //////// constructores
 
+	
+	/**
+	 * DNA() empty constructor returns one DNA object with one Gene.
+	 */
 	public DNA() {
 		this(1);
 	}
 
+	/**
+	 * DNA(int num) returns one DNA object with num Genes.
+	 * @param num
+	 */
 	public DNA(final int num) {
 		setNum(num);
 	}
+
+	/**
+	 * DNA(float data[]) constructs one DNA object with contents of data.
+	 * @param num
+	 */
 
 	public DNA(final float data[]) {
 		setNum(data.length);
@@ -41,6 +54,11 @@ public class DNA {
 		}
 	}
 
+	/**
+	 * DNA(DNA d) constructs one DNA object with contents of DNA d.
+	 * @param d
+	 */
+
 	public DNA(final DNA d) {
 		setNum(d.num);
 		for (int i = 0; i < d.dna.length; i++) {
@@ -48,6 +66,10 @@ public class DNA {
 		}
 	}
 
+	/**
+	 * DNA(DNA d) constructs one DNA object with contents of DNA d +- random(dev).
+	 * @param d, dev
+	 */
 	public DNA(DNA d, float dev) {
 		setNum(d.num);
 		for (int i = 0; i < d.dna.length; i++) {
@@ -70,9 +92,17 @@ public class DNA {
 	}
 
 	/**
+	 * return number of genes in DNA
 	 * @return num
 	 */
 	public int getNum() {
+		return num;
+	}	
+	/**
+	 * return number of genes in DNA
+	 * @return num
+	 */
+	public int size() {
 		return num;
 	}
 
@@ -100,21 +130,37 @@ public class DNA {
 	}
 
 	/**
+	 * Get dna float array
 	 * @return dna float[]
 	 */
 	public float[] getDna() {
 		return dna;
 	}
 
+	/**
+	 * get Gene value index n
+	 * @param n
+	 * @return
+	 */
 	public float getGene(final int n) {
 		return dna[n];
 	}
-
+	
+	/**
+	 * set Gene index n with value val
+	 * @param n
+	 * @param val
+	 * @return
+	 */
 	public DNA setGene(final int n, final float val) {
 		dna[n] = val;
 		return this;
 	}
-
+	
+	/**
+	 * set Random vals on all genes
+	 * @return
+	 */
 	public DNA setRandomDNA() {
 		for (int i = 0; i < dna.length; i++) {
 			dna[i] = random(1);
@@ -122,14 +168,30 @@ public class DNA {
 		return this;
 	}
 
+	/**
+	 * mutate DNA with probability a. 
+	 * each gene is tested for probability, if true, its value is randomized.
+	 * 
+	 * @param a
+	 * @return
+	 */
 	public DNA mutate(final float a) {
 		for (int i = 0; i < num; i++) {
 			if (random(1f) < a)
 				dna[i] = random(1.0000001f);
 		}
+		bound();
 		return this;
 	}
 
+	/**
+	 * mutate DNA with probability a and deviation b. 
+	 * each gene is tested for probability, if true, its value is deviated b amount.
+	 * 
+	 * @param a
+	 * @param b
+	 * @return
+	 */
 	public DNA mutate(final float a, final float b) {
 		// for (int i = 0; i < num; i++) {
 		// float rnd = random(1f);
@@ -141,61 +203,96 @@ public class DNA {
 			if (random(1f) < a)
 				dna[i] += random(-b, b);
 		}
+		bound();
 		return this;
 	}
 
-	// mate
-	public DNA mate(final DNA dnaparent) {
-		return mate(dnaparent, 0.5f);
+	/**
+	 * mate this DNA with other DNA according to its mateMode.
+	 * 
+	 * @param another
+	 * @return
+	 */
+	public DNA mate(final DNA another) {
+		return mate(another, 0.5f);
 	}
 
-	// mate
-	public DNA mate(final DNA dnaparent, final float param) {
+	/**
+	 *  mate this DNA with other DNA according to its mateMode with param.
+	 *  
+	 * @param another
+	 * @param param
+	 * @return
+	 */
+	public DNA mate(final DNA another, final float param) {
 		switch (mateMode) {
 		case 0:
-			return crossover1(dnaparent);
+			return crossover1(another);
 		case 1:
-			return crossover2(dnaparent, param);
+			return crossover2(another, param);
 		case 2:
-			return crossover3(dnaparent, param);
+			return crossover3(another, param);
 		case 3:
-			return crossover4(dnaparent);
+			return crossover4(another);
 		}
+		bound();
 		return this;
 	}
 
-	private DNA crossover1(final DNA dnaparent) {
+	/**
+	 * crossover1: 1 rnd point is defined along the gene sequence. after that point, genes from another get overwritten into this genome.
+	 * @param another
+	 * @return
+	 */
+	private DNA crossover1(final DNA another) {
 		int pt = (int) random(dna.length);
 		for (int i = 0; i < num; i++) {
 			if (i < pt)
 				continue;
 			else
-				dna[i] = dnaparent.dna[i];
+				dna[i] = another.dna[i];
 		}
 		return this;
 	}
 
-	private DNA crossover2(final DNA dnaparent, final float prob) {
+	/**
+	 * crossover2: each gene is tested with a probability, if true, uses other gene into sequence.
+	 * @param another
+	 * @param prob
+	 * @return
+	 */
+	private DNA crossover2(final DNA another, final float prob) {
 		for (int i = 0; i < num; i++) {
 			boolean useOtherGene = random(1) > prob;
 			if (useOtherGene)
-				dna[i] = dnaparent.dna[i];
+				dna[i] = another.dna[i];
 		}
 		return this;
 	}
 
-	private DNA crossover3(final DNA dnaparent, final float percent) {
+	/**
+	 * crossover3: each gene is result of percentage between 2 genomes.
+	 * @param another
+	 * @param percent
+	 * @return
+	 */
+	private DNA crossover3(final DNA another, final float percent) {
 		final float per0 = percent;
 		final float per1 = 1.0f - percent;
 		for (int i = 0; i < num; i++) {
-			dna[i] = per0 * dna[i] + per1 * dnaparent.dna[i];
+			dna[i] = per0 * dna[i] + per1 * another.dna[i];
 		}
 		return this;
 	}
 
-	private DNA crossover4(final DNA dnaparent) {
+	/**
+	 * crossover4: each gene is result of random between 2 genomes.
+	 * @param another
+	 * @return
+	 */
+	private DNA crossover4(final DNA another) {
 		for (int i = 0; i < num; i++) {
-			dna[i] = random(dna[i], dnaparent.dna[i]);
+			dna[i] = random(dna[i], another.dna[i]);
 		}
 		return this;
 	}
@@ -228,29 +325,25 @@ public class DNA {
 	
 	
 	/**
+	 * mutate gene
+	 * 
 	 * @param gene
 	 * @param dev
-	 * @return
+	 * @return this
 	 */
 	public DNA mutateGene(final int gene, final float dev) {
 		dna[gene] += random(-dev, dev);
-		if (boundsMode > 0) {
-			if (boundsMode == 1) {
-				if (dna[gene] > 1)
-					dna[gene] = 1;
-				if (dna[gene] < 0)
-					dna[gene] = 0;
-			}
-		}
+		bound();
 
 		return this;
 	}
 
 	/**
+	 * return the absolute difference value to another DNA
 	 * @param dnatarget
 	 * @return
 	 */
-	private float difference(final DNA dnatarget) {
+	public float difference(final DNA dnatarget) {
 		float val = 0.f;
 		for (int i = 0; i < num; i++) {
 			val += Math.abs(dnatarget.dna[i] - dna[i]);
@@ -259,8 +352,9 @@ public class DNA {
 	}
 
 	/**
+	 * return the absolute difference gene array to another DNA
 	 * @param dnatarget
-	 * @return
+	 * @return float[]
 	 */
 	public float[] differenceDNA(final DNA dnatarget) {
 		float dif[] = new float[dnatarget.num];
@@ -271,6 +365,7 @@ public class DNA {
 	}
 
 	/**
+	 * return the absolute difference gene to another DNA's gene.
 	 * @param gene
 	 * @param dnatarget
 	 * @return
@@ -280,6 +375,7 @@ public class DNA {
 	}
 
 	/**
+	 * evaluate the fitness of this DNA regarding a dnatarget.
 	 * @param dnatarget
 	 * @return
 	 */
@@ -307,32 +403,61 @@ public class DNA {
 		return data;
 	}
 
+	/**
+	 * set DNA mateMode
+	 * @param mateMode
+	 * @return
+	 */
 	public DNA setMateMode(int mateMode) {
 		this.mateMode = mateMode;
 		return this;
 	}
 
+	/**
+	 * get DNA mateMode
+	 * @return
+	 */
 	public int getMateMode() {
 		return mateMode;
 	}
 
+	/**
+	 * set DNA boundsMode
+	 * @param boundsMode
+	 * @return
+	 */
 	public DNA setBoundsMode(int boundsMode) {
 		this.boundsMode = boundsMode;
 		return this;
 	}
 
+	/**
+	 * get DNA boundsMode
+	 * @return
+	 */
 	public int getBoundsMode() {
 		return boundsMode;
 	}
 
 	// //// random
 
+	/**
+	 * return a random number up to max
+	 * @param max
+	 * @return
+	 */
 	public float random(float max) {
 		if (myrand == null)
 			myrand = new Random();
 		return myrand.nextFloat() * max;
 	}
 
+	/**
+	 * return a random number between min and max.
+	 * @param min
+	 * @param max
+	 * @return
+	 */
 	public float random(float min, float max) {
 		float dis = max - min;
 		return random(dis) + min;

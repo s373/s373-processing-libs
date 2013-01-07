@@ -28,6 +28,6 @@ void draw() {
 void keyPressed(){
    if(key==' '){
       automata.setRules();
-   } 
+   }    
 }
 

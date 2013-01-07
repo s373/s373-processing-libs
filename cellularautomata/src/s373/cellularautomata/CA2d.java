@@ -1,11 +1,24 @@
 package s373.cellularautomata;
+/**
+ * CA2d 2d cellular automaton class.
+ * 
+ */
+public class CA2d extends CAdata { 
+//implements CAinterface {
 
-public class CA2d extends CAdata implements CAinterface {
-
-	public CA2d(int rx) {
-		this(rx, rx);
+	/**
+	 * CA2d 2d cellular automaton class constructor with an int specifies number of int x int cells.
+	 * @param dimx
+	 */
+	public CA2d(int dimx) {
+		this(dimx, dimx);
 	}
 
+	/**
+	 * CA2d 2d cellular automaton class constructor with x,y ints specifies grid of this 2d cellular automaton.
+	 * @param rx
+	 * @param ry
+	 */
 	public CA2d(int rx, int ry) {
 		super();
 		dimx = rx;
@@ -16,18 +29,22 @@ public class CA2d extends CAdata implements CAinterface {
 		nextGrid = new int[numpixels];
 		data = new byte[numpixels];
 
-//		numbit = 10 * 10;
-//		rules = new int[numbit];
-//		setCenter1();
-//		setRules();
-		
-		setNumBits(10);
+		setNumBits(512);// 2^(3*3) 
+						//max rules 262144
 		
 		currentGrid[(int) (dimx * 0.5 + dimy * 0.5 * dimx)] = 1;
 
-		System.out.print("CA2d init: " + dimx + " " + dimy + " " + numpixels
+		System.out.print(this + "CA2d init: " + dimx + " " + dimy + " " + numpixels
 				+ "\n");
 	}
+
+	/**
+	 * set cell val at index.
+	 * 
+	 * @param locx
+	 * @param locy
+	 * @param val
+	 */
 
 	public void setCell2D(int locx, int locy, byte val) {
 		int idx = locx + locy * dimx;
@@ -38,6 +55,13 @@ public class CA2d extends CAdata implements CAinterface {
 					+ e + "\n");
 		}
 	}
+	/**
+	 * get cell val at index.
+	 * 
+	 * @param locx
+	 * @param locy
+	 * @return
+	 */
 
 	public int getCell2D(int locx, int locy) {
 		int idx = locx + locy * dimx;
@@ -51,13 +75,16 @@ public class CA2d extends CAdata implements CAinterface {
 		return dst;
 	}
 
+	/**
+	 * update the automaton.
+	 */
+
 	public void update() {
 
 		for (int x = 1; x < dimx - 1; x++) {
 			for (int y = 1; y < dimy - 1; y++) {
 
 				int count = countCells(x, y);
-				// System.out.print("\ncount: " + count); //setRule(int) blows
 				setNextGrid(x, y, rules[count]);
 
 			}
@@ -79,16 +106,26 @@ public class CA2d extends CAdata implements CAinterface {
 
 	}
 
+	/**
+	 * get the exact case for this position.
+	 * 
+	 * @param x
+	 * @param y
+	 * @return
+	 */
 	private int countCells(int x, int y) {
-		int count = getCell2D(x, y - 1) + // north
-				getCell2D(x + 1, y - 1) + // northeast
-				getCell2D(x + 1, y) + // east
-				getCell2D(x + 1, y + 1) + // southeast
-				getCell2D(x, y + 1) + // south
-				getCell2D(x - 1, y + 1) + // southwest
-				getCell2D(x - 1, y) + // west
-				getCell2D(x - 1, y - 1); // northwest
+		
+		int count = 0;
+		for(int i=0; i<9; i++){
+			int lx = i%3;
+			int ly = i/3;
+			if(getCell2D(x+lx-1,y+ly-1)==1){
+				count |= (1<<i);
+			}
+			
+		}
 		return count;
+		
 	}
 
 	public int[] getData() {

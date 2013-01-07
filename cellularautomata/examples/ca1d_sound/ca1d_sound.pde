@@ -1,5 +1,4 @@
 
-
 import s373.cellularautomata.*;
 
 import ddf.minim.*;

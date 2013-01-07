@@ -1,21 +1,37 @@
 package s373.cellularautomata;
 
-public class CA1d extends CAdata implements CAinterface {
+/**
+ * CA1d 1d cellular automaton class.
+ * 
+ */
 
-	public CA1d(int rx) {
+public class CA1d extends CAdata { 
+
+	/**
+	 * CA1d 1d cellular automaton class constructor with an int specifies number of cells.
+	 * @param dimx
+	 */
+	public CA1d(int dimx) {
 		super();
-		dimx = rx;
+		this.dimx = dimx;
 
 		numpixels = dimx;
 		currentGrid = new int[numpixels];
 		nextGrid = new int[numpixels];
 		data = new byte[numpixels];
 
-		setNumBits(3);
+		setNumBits(8);  // 2^3
+						// max rules 256 
 		
-		System.out.print("CA1d init: " + dimx + " " + numpixels + "\n");
+		System.out.print(this+" CA1d init: " + dimx + " " + numpixels + "\n");
 	}
 
+	/**
+	 * set cell val at index.
+	 * 
+	 * @param locx
+	 * @param val
+	 */
 	public void setCell1D(int locx, byte val) {
 
 		try {
@@ -25,6 +41,12 @@ public class CA1d extends CAdata implements CAinterface {
 		}
 	}
 
+	/**
+	 * get cell val at index.
+	 * 
+	 * @param locx
+	 * @return
+	 */
 	public int getCell1D(int locx) {
 		int dst = 0;
 		try {
@@ -35,16 +57,23 @@ public class CA1d extends CAdata implements CAinterface {
 		return dst;
 	}
 
+	/**
+	 * set center cell 1.
+	 * 
+	 */
+
 	public void setCenter1() {
 		currentGrid[(int) (dimx * 0.5)] = 1;
 	}
 
+	/**
+	 * update the automaton.
+	 */
 	public void update() {
 
 		for (int x = 1; x < dimx - 1; x++) {
 
 			int count = countCells(x);
-			// System.out.print("\ncount: " + count); //setRule(int) blows
 			setNextGrid(x, rules[count]);
 
 		}
@@ -64,10 +93,25 @@ public class CA1d extends CAdata implements CAinterface {
 
 	}
 
+	/**
+	 * get the exact case for this position.
+	 * 
+	 * @param x
+	 * @return
+	 */
 	private int countCells(int x) {
-		int count = getCell1D(x - 1) + // north
-				getCell1D(x + 1);
-		return count;
+		
+		//current pattern	111	110	101	100	011	010	001	000
+		int num = 0;
+		for (int i = 0; i < 3; i++) {
+			if (getCell1D(x - 1 + i) == 1)
+				num |= (1 << i);
+		}
+		return num;
+		
+//		int count = getCell1D(x - 1) + getCell1D(x) +
+//				getCell1D(x + 1);
+//		return count;
 	}
 
 	public int[] getData() {
