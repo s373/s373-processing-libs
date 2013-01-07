@@ -2,6 +2,7 @@
   1d cellular automaton example
   
   keys space & 1-0 set rules
+       c clear, x setcenter1
 */
 
 import s373.cellularautomata.*;
@@ -80,7 +81,14 @@ void keyPressed() {
   if(key=='0') {
     automata.setRules(73);
   }
-  
+  if(key=='c'){
+     automata.clear(); 
+     return;
+  }
+  if(key=='x'){
+     automata.setCenter1();
+     return; 
+  }
   println("current rule: "+automata.getRule());
 }
 

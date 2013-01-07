@@ -124,6 +124,15 @@ public class CAdata {
 		setRules();
 		setCenter1();
 	}
+	/**
+	 * clear data.
+	 */
+	public void clear() {
+		for(int i=0; i<numpixels;i++){
+			data[i] = 0;
+			currentGrid[i] = nextGrid[i] = 0;
+		}
+	}
 
 	public float random(float max) {
 		if (myrand == null)
