@@ -11,7 +11,7 @@ import java.util.Random;
  */
 public class CAdata {
 
-	public byte data[] = { 0, 0 };
+//	public byte data[] = { 0, 0 };
 	public int currentGrid[] = { 0, 0 };
 	public int nextGrid[] = { 0, 0 };
 	public byte rules[] = { 0, 1, 1, 1, 1, 0, 0, 0, 0, 0 };
@@ -91,6 +91,39 @@ public class CAdata {
 
 	
 	/**
+	 * set rule in the automaton in binary notation. usefull for CA2d & CA3d due to integer overflow at 64bits.
+	 * CA1d - rules have 8bit precision - send 8 bytes [0/1].
+	 * CA2d - rules have 512bit precision - send 512 bytes [0/1].
+	 * CA3d - rules have 134217728bit precision - send 134217728 bytes [0/1].
+	 * @param binaryrules
+	 */
+	public void setBinaryRule(byte binrules[]) {
+		for (int i = 0; i < binrules.length; i++) {
+			rules[i] = binrules[i];
+		}
+	}
+
+	/**
+	 * get rule in the automaton in binary notation.
+	 * @return rule[]
+	 */
+	public byte[] getBinaryRule() {
+		return rules;
+	}
+	/**
+	 * get rule in the automaton in binary string notation.
+	 * @return String
+	 */
+	public String getBinaryRuleString() {
+		String r="";
+		for (int i = 0; i < rules.length; i++) {
+			r += (rules[i]);
+		}
+		return r;
+	}
+
+	
+	/**
 	 * update the automaton.
 	 */
 
@@ -129,7 +162,6 @@ public class CAdata {
 	 */
 	public void clear() {
 		for(int i=0; i<numpixels;i++){
-			data[i] = 0;
 			currentGrid[i] = nextGrid[i] = 0;
 		}
 	}

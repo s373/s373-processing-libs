@@ -27,7 +27,6 @@ public class CA2d extends CAdata {
 		numpixels = dimx * dimy;
 		currentGrid = new int[numpixels];
 		nextGrid = new int[numpixels];
-		data = new byte[numpixels];
 
 		setNumBits(512);// 2^(3*3) 
 						//max rules 262144

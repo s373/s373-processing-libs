@@ -30,7 +30,6 @@ public class CA3d extends CAdata {
 		numpixels = dimx * dimy * dimz;
 		currentGrid = new int[numpixels];
 		nextGrid = new int[numpixels];
-		data = new byte[numpixels];
 
 		setNumBits(134217728); //2^(3*3*3)
 

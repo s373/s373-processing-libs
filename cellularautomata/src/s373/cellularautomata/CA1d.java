@@ -18,7 +18,6 @@ public class CA1d extends CAdata {
 		numpixels = dimx;
 		currentGrid = new int[numpixels];
 		nextGrid = new int[numpixels];
-		data = new byte[numpixels];
 
 		setNumBits(8);  // 2^3
 						// max rules 256 
