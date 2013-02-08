@@ -109,6 +109,7 @@ public class Flob {
 	public int videoresw = 128;
 	public int videoresh = 128;
 	public int presence = 0;
+	public float presencef = 0.0f;
 	public int videotexmode, pvideotexmode = 10000;
 
 	public int videothresh = 50;
@@ -149,8 +150,8 @@ public class Flob {
 	private String colorModeStr = "";
 	public float lumausercoefs[] = { 0.10f, 0.75f, 0.25f };
 	
-	public int thresholdmode = ABS;
-	public static final int ABS = 0;
+	public int thresholdmode = ABSDIF;
+	public static final int ABSDIF = 0;
 	public static final int LESSER = 1;
 	public static final int GREATER = 2;
 		
@@ -432,7 +433,7 @@ public class Flob {
 				backgroundValf = backgroundLuma[i];
 			
 				switch(tm){
-				case ABS: 
+				case ABSDIF: 
 					diffValf = Math.abs(currentValf-backgroundValf); 
 					if (diffValf >= videothreshf) {
 						presence += 1;
@@ -457,7 +458,7 @@ public class Flob {
 			} else {
 			
 				switch(tm){
-				case ABS: 
+				case ABSDIF: 
 					diffVal = Math.abs(currentVal-backgroundVal); 
 					if (diffVal >= videothresh) {
 						presence += 1;
@@ -486,6 +487,12 @@ public class Flob {
 			videotexbin.pixels[i] = (binarize << 24) | (binarize << 16)	| (binarize << 8) | binarize;							
 		}
 		videotexbin.updatePixels();
+		if(presence>0){
+			presencef = (float)presence / numPixels;
+		} else {
+			presencef = 0.0f;
+		}
+		
 		
 		if(o>0){
 			// now update motion img and use that as base for tracking
@@ -1373,7 +1380,8 @@ public class Flob {
 	 * @return float
 	 */
 	public float getPresencef() {
-		return ((float) presence / (float) numPixels);
+		return presencef;
+//		return ((float) presence / (float) numPixels);
 	}
 
 	/**

@@ -38,6 +38,7 @@ public class ABlob extends baseBlob {
 	public int pboxcenterx, pboxcentery;
 	// normalized values
 	public float cx, cy;
+	public float bx, by;
 	// float pcx,pcy;
 	public float dimx, dimy;
 
@@ -64,6 +65,8 @@ public class ABlob extends baseBlob {
 		pboxcentery = b.pboxcentery;
 		cx = b.cx;
 		cy = b.cy;
+		bx = b.bx;
+		by = b.by;
 		// pcx = b.pcx; pcy = b.pcy;
 		dimx = b.dimx;
 		dimy = b.dimy;

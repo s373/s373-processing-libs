@@ -201,6 +201,8 @@ public class ImageBlobs {
 							b.boxdimy = b.boxmaxy - b.boxminy;
 							b.cx = b.boxcenterx * wcoordsx;
 							b.cy = b.boxcentery * wcoordsy;
+							b.bx = b.boxminx * wcoordsx;
+							b.by = b.boxminy * wcoordsy;
 							b.dimx = ((b.boxmaxx - b.boxminx) * wcoordsx);
 							b.dimy = ((b.boxmaxy - b.boxminy) * wcoordsy);
 							if (tflob.getAnyFeatureActive()) {
