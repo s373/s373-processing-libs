@@ -1,9 +1,31 @@
+/**
+ * Flob
+ * Fast multi-blob detector and simple skeleton tracker using flood-fill algorithms.
+ * http://s373.net/code/flob
+ *
+ * Copyright (C) 2008-2013 Andre Sier http://s373.net
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General
+ * Public License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
+ * Boston, MA  02111-1307  USA
+ */
 package s373.flob;
 
 import java.util.ArrayList;
 
-import processing.core.PApplet;
 import processing.core.PImage;
+
 
 /**
  * 
@@ -16,15 +38,15 @@ public class ImageBlobs {
 	public int numblobs, prevnumblobs;
 	public int trackednumblobs, prevtrackednumblobs;
 	public int lifetime = 100;// 1000;
-	public int ninpix = 100;
+	public int minpix = 100;
 	public int maxpix = 10000;
 	public boolean[] imagemap = null;
 	public boolean imagemaplit = false;
 	public int w, h;// , w2, h2;
 	public float wr, hr;
 	public float wcoordsx, wcoordsy, w2, h2;
-	public int worldw = 700, worldh = 700;
-	// public boolean coordsmode;
+	public float worldwidth = 700, worldheight = 700;
+	//public boolean coordsmode;
 	public int numpix;
 	public float lp1 = 0.05f;
 	public float lp2 = 1.0f - lp1;
@@ -38,32 +60,6 @@ public class ImageBlobs {
 	public ArrayList<pt2> thecoords = null;
 	private Flob tflob;
 
-	ImageBlobs() { // /constructor
-		trackedblobs = new ArrayList<trackedBlob>();
-		prevtrackedblobs = new ArrayList<trackedBlob>();
-		theblobs = new ArrayList<ABlob>();
-		prevblobs = new ArrayList<ABlob>();
-		thecoords = new ArrayList<pt2>();
-		tbsimplelist = new ArrayList<trackedBlob>();
-		quadblobslist = new ArrayList<quadBlob>();
-		numblobs = prevnumblobs = 0;
-		trackednumblobs = prevtrackednumblobs = 0;
-	}
-
-	ImageBlobs(int w, int h, int ww, int wh) { // /constructor
-		trackedblobs = new ArrayList<trackedBlob>();
-		prevtrackedblobs = new ArrayList<trackedBlob>();
-		theblobs = new ArrayList<ABlob>();
-		prevblobs = new ArrayList<ABlob>();
-		thecoords = new ArrayList<pt2>();
-		tbsimplelist = new ArrayList<trackedBlob>();
-		quadblobslist = new ArrayList<quadBlob>();
-		numblobs = prevnumblobs = 0;
-		trackednumblobs = prevtrackednumblobs = 0;
-		calcdims(w, h, ww, wh);
-		worldw = ww;
-		worldh = wh;
-	}
 
 	/**
 	 * default constructor takes a flob instance<br>
@@ -85,28 +81,27 @@ public class ImageBlobs {
 		trackednumblobs = prevtrackednumblobs = 0;
 		calcdims(tflob.videoresw, tflob.videoresh, tflob.worldwidth,
 				tflob.worldheight);
-		// coordsmode = tflob.coordsmode;
+		//coordsmode = tflob.coordsmode;
 	}
 
-	void calcdims(int w, int h, int ww, int wh) {
+	void calcdims(int w, int h, float ww, float wh) {
 		this.w = w;
 		this.h = h;
 		// w2 = w / 2;
 		// h2 = h / 2;
-
 		wr = 1.0f / w;
 		hr = 1.0f / h;
 		numpix = w * h;
-		worldw = ww;
-		worldh = wh;
-		wcoordsx = worldw * wr;
-		wcoordsy = worldh * hr;
-		w2 = worldw / 2;
-		h2 = worldh / 2;
+		worldwidth = ww;
+		worldheight = wh;
+		wcoordsx = worldwidth * wr;
+		wcoordsy = worldheight * hr;
+		w2 = worldwidth / 2;
+		h2 = worldheight / 2;
 	}
 
-	void setninpix(int nin) {
-		ninpix = nin;
+	void setminpix(int nin) {
+		minpix = nin;
 	}
 
 	void setmaxpix(int max) {
@@ -197,7 +192,7 @@ public class ImageBlobs {
 							}
 						}
 
-						if (pixelcount >= ninpix && pixelcount <= maxpix) {
+						if (pixelcount >= minpix && pixelcount <= maxpix) {
 							b.id = numblobs;
 							b.pixelcount = pixelcount;
 							b.boxcenterx = (int) ((b.boxminx + b.boxmaxx) * 0.5);
@@ -209,15 +204,10 @@ public class ImageBlobs {
 							b.dimx = ((b.boxmaxx - b.boxminx) * wcoordsx);
 							b.dimy = ((b.boxmaxy - b.boxminy) * wcoordsy);
 							if (tflob.getAnyFeatureActive()) {
-								if (tflob.trackfeatures[0])
-									b = calc_feature_head(b);
-								if (tflob.trackfeatures[1]) {
-									b = calc_feature_arms(b);
-								}
-								if (tflob.trackfeatures[2])
-									b = calc_feature_feet(b);
-								if (tflob.trackfeatures[3])
-									b = calc_feature_bottom(b);
+								if (tflob.trackfeatures[0])	b = calc_feature_head(b);
+								if (tflob.trackfeatures[1]) b = calc_feature_arms(b);								
+								if (tflob.trackfeatures[2]) b = calc_feature_feet(b);
+								if (tflob.trackfeatures[3]) b = calc_feature_bottom(b);
 							}
 
 							ABlob blob = new ABlob(b);
@@ -230,6 +220,7 @@ public class ImageBlobs {
 		}
 	}
 
+	
 	void calcQuad(PImage pimage) {
 		int min0 = 10000;
 		int max0 = -100;
@@ -290,7 +281,7 @@ public class ImageBlobs {
 								}
 							}
 						}
-						if (pixelcount >= ninpix && pixelcount <= maxpix) {
+						if (pixelcount >= minpix && pixelcount <= maxpix) {
 							b.id = numblobs;
 							b.pixelcount = pixelcount;
 							b.boxcenterx = (int) ((b.boxminx + b.boxmaxx) * 0.5);
@@ -310,6 +301,8 @@ public class ImageBlobs {
 
 	boolean testimagemap(int x, int y) {
 
+		// up to you to dont go out of bounds 
+		
 		// boolean px = false;
 		// try {
 		// px = imagemap[y * w + x];
@@ -460,16 +453,16 @@ public class ImageBlobs {
 
 	ABlob calc_feature_feet(ABlob b) {
 		// /passed to 2 feet instead of one bottom
-		int bx = PApplet.constrain(b.boxminx, 0, w - 1);
+		int bx = tflob.app.constrain(b.boxminx, 0, w - 1);
 		// int by = PApplet.constrain(b.boxminy,0,h-1);
-		int ex = PApplet.constrain(b.boxmaxx, 0, w - 1);
-		int ey = PApplet.constrain(b.boxmaxy, 0, h - 1);
+		int ex = tflob.app.constrain(b.boxmaxx, 0, w - 1);
+		int ey = tflob.app.constrain(b.boxmaxy, 0, h - 1);
 
 		int cx = b.boxcenterx;// (bx+ex)/2;///b.boxdimx/2 + bx;
 		int cy = b.boxcentery;// (by+ey)/2;//b.boxdimy/2 + by;
 
-		cx = PApplet.constrain(cx, 0, w - 1);
-		cy = PApplet.constrain(cy, 0, h - 1);
+		cx = tflob.app.constrain(cx, 0, w - 1);
+		cy = tflob.app.constrain(cy, 0, h - 1);
 
 		int i = 0, j = 0;
 
@@ -622,13 +615,13 @@ public class ImageBlobs {
 
 		// feet
 
-		bx = PApplet.constrain(b.boxminx, 0, w - 1);
-		ex = PApplet.constrain(b.boxmaxx, 0, w - 1);
-		ey = PApplet.constrain(b.boxmaxy, 0, h - 1);
+		bx = tflob.app.constrain(b.boxminx, 0, w - 1);
+		ex = tflob.app.constrain(b.boxmaxx, 0, w - 1);
+		ey = tflob.app.constrain(b.boxmaxy, 0, h - 1);
 
 		cx = b.boxcenterx;
 
-		cx = PApplet.constrain(cx, 0, w - 1);
+		cx = tflob.app.constrain(cx, 0, w - 1);
 
 		// footleft
 		j = ey;

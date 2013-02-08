@@ -1,30 +1,9 @@
-/*
-flob // flood-fill multi-blob detector
-
-(c) copyright 2008-2010 andré sier
-
-This library is free software; you can redistribute it and/or
-modify it under the terms of the GNU Lesser General Public
-License as published by the Free Software Foundation; either
-version 2.1 of the License, or (at your option) any later version.
-
-This library is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-Lesser General Public License for more details.
-
-You should have received a copy of the GNU Lesser General
-Public License along with this library; if not, write to the
-Free Software Foundation, Inc., 59 Temple Place, Suite 330,
-Boston, MA  02111-1307  USA
- */
-
 /**
- * flob
+ * Flob
  * Fast multi-blob detector and simple skeleton tracker using flood-fill algorithms.
  * http://s373.net/code/flob
  *
- * Copyright (C) 2008-2012 André Sier http://s373.net
+ * Copyright (C) 2008-2013 Andre Sier http://s373.net
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -41,13 +20,27 @@ Boston, MA  02111-1307  USA
  * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
  * Boston, MA  02111-1307  USA
  * 
- * @author      André Sier http://s373.net
- * @modified    12/21/2012
- * @version     0.2.1x (21)
+ * @author      Andre Sier 
+ * @modified    20130208
+ * @version     0.2.2y (22)
+ * @url			http://s373.net/code/flob
  */
 
-
+/**
+ * version 0.2.2y documentation assistance and
+ * by Mahesh Viswanathan <mahesh@tinymogul.com>
+ * 
+ * dont know how you want to be credited, please change this as you see fit
+ */
 package s373.flob;
+
+
+//import s373.flob.baseBlob;
+//import s373.flob.ABlob;
+//import s373.flob.trackedBlob;
+//import s373.flob.quadBlob;
+//import s373.flob.ImageBlobs;
+//import s373.flob.pt2;
 
 import java.io.File;
 import java.net.URISyntaxException;
@@ -59,27 +52,51 @@ import processing.core.PConstants;
 import processing.core.PImage;
 
 
-/**
- * 
- * flob is a flood-fill multi-blob detector, <br>
- * tracks blobs in image streams,their centroids and bounding boxes<br>
- * <br>
- * 
- * 
- * @author André Sier <br>
- *         url: http://s373.net/code/flob<br>
- *         version 0.0.1u<br>
- * <br>
- */
-
+/**           
+ * Flob           <br/>
+ * Fast multi-blob detector and simple skeleton tracker using flood-fill algorithms.           <br/>
+ * http://s373.net/code/flob           <br/>
+ *	 * Flob is a continuous frame differencing algorithm using flood fill procedures to calculate blobs.           <br/>
+	 * basic process is comparing incoming image to a background image.           <br/>
+	 * there are two main operating modes @om (flob.setOm()):           <br/>
+	 * 	-STATIC_DIFFERENCE (0)           <br/>
+	 * 		incoming image is compared to background. background is unchanged.           <br/>
+	 * 	-CONTINUOUS_DIFFERENCE (1)           <br/>
+	 * 		incoming image is compared to background. background is set to previous frame.           <br/>
+	 * 	-CONTINUOUS_EASE_DIFFERENCE (2)           <br/>
+	 * 		incoming image is compared to background. previous frame eased onto background pixels.           <br/>
+	 *            <br/>
+	 * Flob receives an ARGB Processing PImage as input and converts            <br/>
+	 * rgb->luma (luminance, greyscale image) using one of several            <br/>
+	 * methods specified through @colormode.           <br/>
+	 * first the image is mirrored if specified through @mirrorX @mirrorY           <br/>
+	 * then the image is converted from argb->luma using @colormode           <br/>
+	 * possible @colormode values:           <br/>
+	 * @RED           
+	 * @GREEN         
+	 * @BLUE          
+	 * @LUMA601       
+	 * @LUMA609       
+	 * @LUMAUSER      
+	 *            
+	 * the greyscale luminance image is then binarized using the            <br/>
+	 * @videothresh value as reference.           <br/>
+	 *            <br/>
+	 *            <br/>
+           <br/>
+	 * to calculate the binary image, now Flob takes @thresholdmode            <br/>
+	 * to specify the operation to calculate the binary image.            <br/>
+	 * possible values include:           <br/>
+	 * 	- @ABS : absolute diference of incoming pixel versus background           <br/>
+	 * 	- @LESSER : if incoming pixel less than threshold, mark as white pixel in binary image           <br/>
+	 * 	- @GREATER : white if above @videothresh value           <br/>
+           <br/>
+           <br/>
+ *           <br/>
+ */           
 public class Flob {
 
 	public PApplet app;
-
-	// floating point new stuff notup yet
-	public float[] backgroundPixelsF;
-	public float[] currentPixelsF;
-	public float[] differencePixelsF;
 
 	public ImageBlobs imageblobs;
 	public PImage videoimg;
@@ -87,31 +104,35 @@ public class Flob {
 	public PImage videotexmotion;
 	public PImage videotexbin;
 	public PImage videoteximgmotion;
-	public int[] backgroundPixels;
+	public int backgroundPixels[];
 	public int numPixels;
 	public int videoresw = 128;
 	public int videoresh = 128;
 	public int presence = 0;
 	public int videotexmode, pvideotexmode = 10000;
-	public boolean videotexchange = true;
 
 	public int videothresh = 50;
-//	public float videothresh = 50;
-	public int videofade = 50; // only in continuous dif
-//	public float videofade = 50; // only in continuous dif
+	public float videothreshf = 50;
+	public int videofade = 50; // only in om > 0
+	public float videofadef = 50; // only in continuous dif
 	public boolean mirrorX, mirrorY;
-	public int worldwidth, worldheight;
-	public boolean coordsmode = true;
+	public float worldwidth, worldheight;
+//	public boolean coordsmode = true;
+	// no need, user may choose output dimensions 0-1 and go from there, changed worldwidth to float
 	public int blur = 0;
-	public boolean[] trackfeatures = new boolean[5];
+	public boolean trackfeatures[];
 
-	public int om = STATIC_DIFFERENCE;// 0; // operating mode : 0 = static
-										// diference; 1 = continuous diference
+	public boolean floatmode=false;
+	public float floatsmooth=0.555f;
+	public float backgroundLuma[];
+	public float currentLuma[];
+		
+	public int om = STATIC_DIFFERENCE;										
 	public static final int STATIC_DIFFERENCE = 0;
 	public static final int CONTINUOUS_DIFFERENCE = 1;
 	public static final int CONTINUOUS_EASE_DIFFERENCE = 2;
 	public float continuous_ease = 0.05f;
-
+	
 	public int colormode = GREEN;
 	public static final int RED = 0;
 	public static final int GREEN = 1;
@@ -119,10 +140,6 @@ public class Flob {
 	public static final int LUMA601 = 3;
 	public static final int LUMA709 = 4;
 	public static final int LUMAUSER = 5;
-	public float lumausercoefs[] = { 0.10f, 0.75f, 0.25f };
-	public int blobpixmin = 0;
-	public int blobpixmax = 0;
-
 	public static String redstr = "RED";
 	public static String greenstr = "GREEN";
 	public static String bluestr = "BLUE";
@@ -130,46 +147,65 @@ public class Flob {
 	public static String luma709str = "LUMA709";
 	public static String lumausrstr = "LUMAUSER";
 	private String colorModeStr = "";
+	public float lumausercoefs[] = { 0.10f, 0.75f, 0.25f };
+	
+	public int thresholdmode = ABS;
+	public static final int ABS = 0;
+	public static final int LESSER = 1;
+	public static final int GREATER = 2;
+		
+	public int blobpixmin = 0;
+	public int blobpixmax = 0;
 
 	public static int trackedBlobLifeTime = 5; // 60
+	public static float trackedBlobMaxDistSquared = 2555f;
 
-	public static String VERSION = "flob 0.2.1x - built ";
+	public static String VERSION = "flob 0.2.2y - built ";
 
-	public Flob(PApplet theParent) {
-		app = theParent;
+
+	/**
+	 * 
+	 * Flob constructor usage summary:
+	 * 
+	 * public Flob(PApplet applet):
+	 * 		output dimensions of blob coords (PApplet.width, PApplet.height) & 
+	 * 		assumes incoming image 128px
+	 * 
+	 * 
+	 * public Flob(PApplet applet, PImage video):
+	 * 		output dimensions of blob coords (PApplet.width, PApplet.height) & 
+	 * 		assumes incoming image dimensions of @video
+	 * 
+	 * public Flob(PApplet applet, PImage video, float w, float h):
+	 * 		output dimensions of blob coords (@w, @h) & 
+	 * 		assumes incoming image dimensions of @video
+	 * 
+	 * 
+	 * public Flob(PApplet applet, int srcW, int srcH, float dstW, float dstH):
+	 * 		output dimensions of blob coords (@dstW, @dstH) & 
+	 * 		assumes incoming image dimensions of @srcW, @srcH
+	 * 
+	 * 
+	 */
+	public Flob(PApplet applet) {
+		app = applet;
 		videoresw = videoresh = 128;
-		worldwidth = theParent.width;
-		worldheight = theParent.height;
+		worldwidth = (float)applet.width;
+		worldheight = (float)applet.height;
 		setup();
 	}
 
-	/**
-	 * calling the constructor with a PApplet, PImage parameters inits the image
-	 * vars
-	 * 
-	 * @param PApplet
-	 *            , PImage
-	 */
-	public Flob(PApplet theParent, PImage video) {
-		app = theParent;
+	public Flob(PApplet applet, PImage video) {
+		app = applet;
 		videoresw = video.width;
 		videoresh = video.height;
-		worldwidth = theParent.width;
-		worldheight = theParent.height;
+		worldwidth = (float)applet.width;
+		worldheight = (float)applet.height;
 		setup();
 	}
 
-	/**
-	 * calling the constructor with a PApplet, PImage, yourWidth, yourHeight
-	 * parameters inits the image vars yourWidth will be default coords return
-	 * on flob for each blob's x pos, the same for height
-	 * 
-	 * @param PImage
-	 *            , width, height
-	 */
-
-	public Flob(PApplet theParent, PImage video, int w, int h) {
-		app = theParent;
+	public Flob(PApplet applet, PImage video, float w, float h) {
+		app = applet;
 		videoresw = video.width;
 		videoresh = video.height;
 		worldwidth = w;
@@ -177,17 +213,8 @@ public class Flob {
 		setup();
 	}
 
-	/**
-	 * calling the constructor with a PApplet, srcWidth, srcHeight, dstWidth,
-	 * dstHeight parameters inits the image vars yourWidth will be default
-	 * coords return on flob for each blob's x pos, the same for height
-	 * 
-	 * @param srcWidth
-	 *            , srcHeight, dstWidth, dstHeight
-	 */
-
-	public Flob(PApplet theParent, int srcW, int srcH, int dstW, int dstH) {
-		app = theParent;
+	public Flob(PApplet applet, int srcW, int srcH, float dstW, float dstH) {
+		app = applet;
 		videoresw = srcW;
 		videoresh = srcH;
 		worldwidth = dstW;
@@ -195,23 +222,22 @@ public class Flob {
 		setup();
 	}
 
-	void setup() {
+	private void setup() {
 		trackfeatures = new boolean[5];
 		for (int i = 0; i < 5; i++) {
 			trackfeatures[i] = false;
 		}
-		videoimg = app.createImage(videoresw, videoresh, PConstants.RGB);
-		videotexbin = app.createImage(videoresw, videoresh, PConstants.RGB);
-		videotexmotion = app.createImage(videoresw, videoresh, PConstants.RGB);
+		videoimg = app.createImage(videoresw, videoresh, PConstants.ARGB);
+		videotexbin = app.createImage(videoresw, videoresh, PConstants.ARGB);
+		videotexmotion = app.createImage(videoresw, videoresh, PConstants.ARGB);
 		videoteximgmotion = app.createImage(videoresw, videoresh,
-				PConstants.RGB);
-		videotex = app.createImage(videoresw, videoresh, PConstants.RGB);
+				PConstants.ARGB);
+		videotex = app.createImage(videoresw, videoresh, PConstants.ARGB);
 		numPixels = videoresw * videoresh;
 		backgroundPixels = new int[numPixels];
-		// fbake float engine
-		backgroundPixelsF = new float[numPixels];
-		currentPixelsF = new float[numPixels];
-		differencePixelsF = new float[numPixels];
+
+		backgroundLuma = new float[numPixels];
+		currentLuma = new float[numPixels];
 
 		imageblobs = new ImageBlobs(this);// pass flob pointer
 
@@ -220,12 +246,43 @@ public class Flob {
 
 	public PImage binarize(int pix[]) {
 		// PImage img = new PImage(videoresw, videoresh);
-		PImage img = app.createImage(videoresw, videoresh, PConstants.RGB);
-		img.pixels = pix;
+		PImage img = app.createImage(videoresw, videoresh, PConstants.ARGB);
+		img.loadPixels();
+		for(int i=0; i<pix.length;i++){
+			img.pixels[i] = pix[i];
+		}
+		img.updatePixels();
 		return binarize(img);
 	}
 
 	/**
+	 * Flob.binarize()  main image preprocessing stage. outputs prepocessed PImage for tracking algorithms.
+	 * incorporates fast blur code by Mario Klingemann <http://incubator.quasimondo.com>
+	 * 
+	 * thanks Eduardo Pinto & Fausto Fonseca for feedback 
+	 * during osomdopensamento.wordpress.com @ fbaul, 2009
+	 * 
+	 * 
+	 * Flob receives an ARGB Processing PImage as input and converts 
+	 * rgb->luma (luminance, greyscale image) using one of several 
+	 * methods specified through @colormode.
+	 * 
+	 * binarize steps include:
+	 * 
+	 * receives argb PImages @video; 
+	 * fastblurs' the Image using Mario Klingemann fast blur 1.1 code according to @blur parameter;
+	 * mirrors if @mirrorX / @mirrorY activated;
+	 * converts argb->luma derived from @colormode;
+	 * compares luma image to @videothresh value according do @thresholdmode; 
+	 * returns binary output image;
+	 * 
+	 * 
+	 * 
+	 * 
+	 * 
+	 * 
+	 * old comment left
+	 * 
 	 * first pass of the flob engine.<br>
 	 * revised in version 001l to allow different color channel tracking.<br>
 	 * transforms the input image in a black and white only image (binary
@@ -233,24 +290,27 @@ public class Flob {
 	 * optionally insert a fastblur in the image. (if setBlur > 0, blur has that
 	 * radius)<br>
 	 * // nice fastblur insertion, thanks to fausto fonseca for showing the
-	 * code, <br>
-	 * // and to eduardo pinto for pissing me about it. it's fast and great! <br>
+	 * code, and to eduardo pinto for teasing me about it. it's fast and great! <br>
 	 * // fast blur code by Mario Klingemann <http://incubator.quasimondo.com><br>
 	 * returns a binary image suitable for the calc engine.<br>
 	 * <br>
 	 * built in fastblur filter if blurRadius > 0. <br>
 	 * 
+	 * @param PImage
 	 * @return PImage
 	 */
 	public PImage binarize(PImage video) {
 
+		// internal src image copy
 		videoimg = video;
 
+		// Mario Klingemann's fast blur since 2009
 		if (blur > 0)
 			videoimg = fastblur(videoimg, blur);
 
 		videoimg.loadPixels();
 
+		// pixelMirror implementation as
 		if (mirrorX && mirrorY) {
 			int[] image = new int[numPixels]; // one image to flipx&y
 			for (int i = 0; i < numPixels; i++) {
@@ -266,7 +326,6 @@ public class Flob {
 			videoimg.updatePixels();
 
 		} else if (mirrorX && !mirrorY) {
-
 			int[] scanline = new int[videoresw]; // one hscanline
 			for (int j = 0; j < videoresh; j++) {
 				for (int i = 0; i < videoresw; i++) {
@@ -275,7 +334,6 @@ public class Flob {
 					videoimg.pixels[j * videoresw + i] = scanline[i];
 				}
 			}
-
 			videoimg.updatePixels();
 
 		} else if (!mirrorX && mirrorY) {
@@ -293,210 +351,179 @@ public class Flob {
 			videoimg.updatePixels();
 		}
 
+		
+		
+		
+		// begin processing input image to binary image 
+		
 		presence = 0;
-		videoimg.loadPixels();
+//		videoimg.loadPixels();
 
 		int currentVal = 0;
 		int backgroundVal = 0;
-		// float currentValf = 0, backgroundValf = 0, diffValf = 0;
-//		float diffValf = 0;
 		int diffVal = 0;
 
-//		float fease = 0.17f;
+		float currentValf = 0, backgroundValf = 0, diffValf = 0;
+		
+		boolean fm = floatmode;
+		float	fs = floatsmooth;
+		int		cm = colormode;
+		int		tm = thresholdmode;
+		int		o = om;
+		
+		for (int i = 0; i < numPixels; i++) {
+			
+			int currColor = videoimg.pixels[i];
+			int bkgdColor = backgroundPixels[i];
+			
+			
+			switch (cm) {
+					case RED:
+						currentVal = (currColor) & 0xFF;
+						backgroundVal = (bkgdColor) & 0xFF;
+						break;
+					default:	
+					case GREEN:
+						currentVal = (currColor >> 8) & 0xFF;
+						backgroundVal = (bkgdColor >> 8) & 0xFF;
+						break;
+					case BLUE:
+						currentVal = (currColor >> 16) & 0xFF;
+						backgroundVal = (bkgdColor >> 16) & 0xFF;
+						break;
+					case LUMA601:
+						float pixval = (0.299f * ((currColor) & 0xFF)
+								+ 0.587f * ((currColor >> 8) & 0xFF) + 0.114f * ((currColor >> 16) & 0xFF)) + 0.5f; // CCIR
+						float bgval =  (0.299f * ((bkgdColor) & 0xFF)
+								+ 0.587f * ((bkgdColor >> 8) & 0xFF) + 0.114f * ((bkgdColor >> 16) & 0xFF)) + 0.5f; // CCIR
+						currentVal = (int) pixval;
+						backgroundVal = (int) bgval;
+						break;
+					case LUMA709:
+						float pixval1 =  (0.2126f * ((currColor) & 0xFF)
+								+ 0.7152f * ((currColor >> 8) & 0xFF) + 0.0722f * ((currColor >> 16) & 0xFF)) + 0.5f; // CCIR
+						float bgval1 =  (0.2126f * ((bkgdColor) & 0xFF)
+								+ 0.7152f * ((bkgdColor >> 8) & 0xFF) + 0.0722f * ((bkgdColor >> 16) & 0xFF)) + 0.5f; // CCIR
+																													// 709
+						currentVal = (int) pixval1;
+						backgroundVal = (int) bgval1;
+						break;
+					case LUMAUSER:
+						float pixval2 = (lumausercoefs[0] * ((currColor) & 0xFF)
+								+ lumausercoefs[1] * ((currColor >> 8) & 0xFF) + lumausercoefs[2]
+								* ((currColor >> 16) & 0xFF)) + 0.5f; // CCIR
+																		// 709
+						float bgval2 = (lumausercoefs[0] * ((bkgdColor) & 0xFF)
+								+ lumausercoefs[1] * ((bkgdColor >> 8) & 0xFF) + lumausercoefs[2]
+								* ((bkgdColor >> 16) & 0xFF)) + 0.5f; // CCIR
+																		// 709
+						currentVal = (int) pixval2;
+						backgroundVal = (int) bgval2;
+						break;
+		
+					}
 
-		if (om == STATIC_DIFFERENCE) {
+			int binarize = 0;
 
-			for (int i = 0; i < numPixels; i++) {
-				int currColor = videoimg.pixels[i];
-				int bkgdColor = backgroundPixels[i];
-
-				// currentValf = backgroundPixelsF[i];
-				// backgroundValf = backgroundPixelsF[i];
-
-				switch (colormode) {
-				case RED:
-					currentVal = (currColor) & 0xFF;
-					backgroundVal = (bkgdColor) & 0xFF;
+			if(fm){
+				if(Math.abs(currentLuma[i]-currentVal)>1e-5) currentLuma[i] += ((float)currentVal-currentLuma[i])*fs;
+				if(Math.abs(backgroundLuma[i]-backgroundVal)>1e-5) backgroundLuma[i] += ((float)backgroundVal-backgroundLuma[i])*fs;
+				currentValf = currentLuma[i];
+				backgroundValf = backgroundLuma[i];
+			
+				switch(tm){
+				case ABS: 
+					diffValf = Math.abs(currentValf-backgroundValf); 
+					if (diffValf >= videothreshf) {
+						presence += 1;
+						binarize = 255;
+					}
 					break;
-				case GREEN:
-					currentVal = (currColor >> 8) & 0xFF;
-					backgroundVal = (bkgdColor >> 8) & 0xFF;
+				case LESSER: 
+					diffValf = currentValf-backgroundValf; 
+					if (diffValf <= videothreshf) {
+						presence += 1;
+						binarize = 255;
+					}
 					break;
-				default:
-				case BLUE:
-					currentVal = (currColor >> 16) & 0xFF;
-					backgroundVal = (bkgdColor >> 16) & 0xFF;
+				case GREATER: 
+					diffValf = currentValf-backgroundValf; 
+					if (diffValf >= videothreshf) {
+						presence += 1;
+						binarize = 255;
+					}
 					break;
-				case LUMA601:
-					float pixval = (float) (0.299f * ((currColor) & 0xFF)
-							+ 0.587 * ((currColor >> 8) & 0xFF) + 0.114 * ((currColor >> 16) & 0xFF)) + 0.5f; // CCIR
-					float bgval = (float) (0.299f * ((bkgdColor) & 0xFF)
-							+ 0.587 * ((bkgdColor >> 8) & 0xFF) + 0.114 * ((bkgdColor >> 16) & 0xFF)) + 0.5f; // CCIR
-					currentVal = (int) pixval;
-					backgroundVal = (int) bgval;
-					break;
-				case LUMA709:
-					float pixval1 = (float) (0.2126f * ((currColor) & 0xFF)
-							+ 0.7152 * ((currColor >> 8) & 0xFF) + 0.0722 * ((currColor >> 16) & 0xFF)) + 0.5f; // CCIR
-					float bgval1 = (float) (0.2126f * ((bkgdColor) & 0xFF)
-							+ 0.7152 * ((bkgdColor >> 8) & 0xFF) + 0.0722 * ((bkgdColor >> 16) & 0xFF)) + 0.5f; // CCIR
-																												// 709
-					currentVal = (int) pixval1;
-					backgroundVal = (int) bgval1;
-					break;
-				case LUMAUSER:
-					float pixval2 = (lumausercoefs[0] * ((currColor) & 0xFF)
-							+ lumausercoefs[1] * ((currColor >> 8) & 0xFF) + lumausercoefs[2]
-							* ((currColor >> 16) & 0xFF)) + 0.5f; // CCIR
-																	// 709
-					float bgval2 = (lumausercoefs[0] * ((bkgdColor) & 0xFF)
-							+ lumausercoefs[1] * ((bkgdColor >> 8) & 0xFF) + lumausercoefs[2]
-							* ((bkgdColor >> 16) & 0xFF)) + 0.5f; // CCIR
-																	// 709
-					currentVal = (int) pixval2;
-					backgroundVal = (int) bgval2;
-					break;
-
 				}
-
-//				backgroundPixelsF[i] += (backgroundVal - backgroundPixelsF[i])
-//						* fease;
-//				currentPixelsF[i] += (currentVal - currentPixelsF[i]) * fease;
-
-				diffVal = Math.abs(currentVal - backgroundVal);
-//				diffValf = Math.abs(currentPixelsF[i] - backgroundPixelsF[i]);
-
-//				differencePixelsF[i] = diffValf;
-
-				int binarize = 0;
-				// if (diffValf > videothresh) {
-				if (diffVal >= videothresh) {
-					presence += 1;
-					binarize = 255;
+			} else {
+			
+				switch(tm){
+				case ABS: 
+					diffVal = Math.abs(currentVal-backgroundVal); 
+					if (diffVal >= videothresh) {
+						presence += 1;
+						binarize = 255;
+					}
+					break;
+				case LESSER: 
+					diffVal = currentVal-backgroundVal; 
+					if (diffVal <= videothresh) {
+						presence += 1;
+						binarize = 255;
+					}
+					break;
+				case GREATER: 
+					diffVal = currentVal-backgroundVal; 
+					if (diffVal >= videothresh) {
+						presence += 1;
+						binarize = 255;
+					}
+					break;
 				}
-
-				videotexbin.pixels[i] = (binarize << 24) | (binarize << 16)
-						| (binarize << 8) | binarize;
+				
 			}
-			videoimg.updatePixels();
-			videotexbin.updatePixels();
-
-			return videotexbin;
-
-		} else if (om >= CONTINUOUS_DIFFERENCE) {
-
-			for (int i = 0; i < numPixels; i++) {
-				int currColor = video.pixels[i];
-				int bkgdColor = backgroundPixels[i];
-
-				switch (colormode) {
-				case RED:
-					currentVal = (currColor) & 0xFF;
-					backgroundVal = (bkgdColor) & 0xFF;
-					break;
-				case GREEN:
-					currentVal = (currColor >> 8) & 0xFF;
-					backgroundVal = (bkgdColor >> 8) & 0xFF;
-					break;
-				default:
-				case BLUE:
-					currentVal = (currColor >> 16) & 0xFF;
-					backgroundVal = (bkgdColor >> 16) & 0xFF;
-					break;
-				case LUMA601:
-					float pixval = (float) (0.299f * ((currColor) & 0xFF)
-							+ 0.587 * ((currColor >> 8) & 0xFF) + 0.114 * ((currColor >> 16) & 0xFF)) + 0.5f; // CCIR
-					float bgval = (float) (0.299f * ((bkgdColor) & 0xFF)
-							+ 0.587 * ((bkgdColor >> 8) & 0xFF) + 0.114 * ((bkgdColor >> 16) & 0xFF)) + 0.5f; // CCIR
-																												// 601
-					currentVal = (int) pixval;
-					backgroundVal = (int) bgval;
-					break;
-				case LUMA709:
-					float pixval1 = (float) (0.2126f * ((currColor) & 0xFF)
-							+ 0.7152 * ((currColor >> 8) & 0xFF) + 0.0722 * ((currColor >> 16) & 0xFF)) + 0.5f; // CCIR
-					float bgval1 = (float) (0.2126f * ((bkgdColor) & 0xFF)
-							+ 0.7152 * ((bkgdColor >> 8) & 0xFF) + 0.0722 * ((bkgdColor >> 16) & 0xFF)) + 0.5f; // CCIR
-																												// 709
-					currentVal = (int) pixval1;
-					backgroundVal = (int) bgval1;
-					break;
-				case LUMAUSER:
-					float pixval2 = (lumausercoefs[0] * ((currColor) & 0xFF)
-							+ lumausercoefs[1] * ((currColor >> 8) & 0xFF) + lumausercoefs[2]
-							* ((currColor >> 16) & 0xFF)) + 0.5f; // CCIR
-																	// 709
-					float bgval2 = (lumausercoefs[0] * ((bkgdColor) & 0xFF)
-							+ lumausercoefs[1] * ((bkgdColor >> 8) & 0xFF) + lumausercoefs[2]
-							* ((bkgdColor >> 16) & 0xFF)) + 0.5f; // CCIR
-																	// 709
-					currentVal = (int) pixval2;
-					backgroundVal = (int) bgval2;
-					break;
-				}
-
-//				backgroundPixelsF[i] += (backgroundVal - backgroundPixelsF[i])
-//						* fease;
-//				currentPixelsF[i] += (currentVal - currentPixelsF[i]) * fease;
-
-				diffVal = Math.abs(currentVal - backgroundVal);
-//				diffValf = Math.abs(currentPixelsF[i] - backgroundPixelsF[i]);
-//				differencePixelsF[i] = diffValf;
-
-				int binarize = 0;
-//				if (diffValf >= videothresh) {
-				if (diffVal >= videothresh) {
-					presence += 1;
-					binarize = 255;
-				}
-
-				videotexbin.pixels[i] = (binarize << 24) | (binarize << 16)
-						| (binarize << 8) | binarize;
-			}
-
+			
+			// encode pix to binary img
+			videotexbin.pixels[i] = (binarize << 24) | (binarize << 16)	| (binarize << 8) | binarize;							
+		}
+		videotexbin.updatePixels();
+		
+		if(o>0){
 			// now update motion img and use that as base for tracking
-
 			videotexmotion.loadPixels();
-
 			for (int i = 0; i < numPixels; i++) {
-
-//				float valf = differencePixelsF[i];
-//				// int value = (videotexmotion.pixels[i] >> 8) & 0xff;
-//				valf -= videofade; // minus fade
-//				// TODO: 
-//				valf += (videotexbin.pixels[i] >> 8) & 0xff; // + binary
-//				valf = valf < 0 ? 0 : valf > 255 ? 255 : valf;
-//				int value = Math.round(valf);
-//				videotexmotion.pixels[i] = (value << 24) | (value << 16)
-//						| (value << 8) | value;
-
-				// // previous main int only methodo
-
-				 int value = (videotexmotion.pixels[i] >> 8) & 0xff;
-				 value -= videofade; // minus fade
-				 value += (videotexbin.pixels[i] >> 8) & 0xff; // + binary
-				 value = value < 0 ? 0 : value > 255 ? 255 : value;
-				 videotexmotion.pixels[i] = (value << 24) | (value << 16)
-				 | (value << 8) | value;
+				if(fm){
+					float valf = videotexmotion.pixels[i] & 0xff;//currentLuma[i]-backgroundLuma[i];
+					valf -= videofadef;
+					valf += videotexbin.pixels[i] & 0xff;
+					valf = valf < 0.0f ? 0.0f : valf > 255.f ? 255.f : valf;
+					int value = Math.round(valf);
+					videotexmotion.pixels[i] = (value << 24) | (value << 16)
+							| (value << 8) | value;
+				} else {
+					 int value = videotexmotion.pixels[i] & 0xff;
+					 value -= videofade; // minus fade
+					 value += videotexbin.pixels[i]  & 0xff; // + binary
+					 value = value < 0 ? 0 : value > 255 ? 255 : value;
+					 videotexmotion.pixels[i] = (value << 24) | (value << 16)
+					 | (value << 8) | value;
+				}
 			}
 
-			videoimg.updatePixels();
 			videotexmotion.updatePixels();
 
-			// learn background as the frame that just passed
-			if (om == 1)
+			if (o == 1)
 				setBackground(videoimg);
-			if (om == 2)
+			if (o == 2)
 				easeBackground(videoimg);
 
 			return videotexmotion;
 		}
-
-		return videotexbin; // / just for return
+		
+		return videotexbin;
 
 	}
 
-	// // io stuff
+	/// io stuff
 
 	/**
 	 * returns the updated videotex (in case it needs updating)
@@ -513,6 +540,7 @@ public class Flob {
 			return videoimg;
 
 		if (videotexmode == 3) {
+			// much faster since 0022y
 			videoteximgmotion.loadPixels();
 			videoimg.loadPixels();
 			videotexmotion.loadPixels();
@@ -521,24 +549,28 @@ public class Flob {
 				int pixtexmotion = (om == 0) ? videotexbin.pixels[i]
 						: videotexmotion.pixels[i];
 				int piximg = videoimg.pixels[i];
+				int pix = 0;
+				if(pixtexmotion == 0){
+					pix = piximg;
+				} else {
+					pix = pixtexmotion;//0xffffff					
+				}
 
-				int pixr = (((pixtexmotion >> 16) & 0xff) + ((piximg >> 16) & 0xff));
-				pixr = (pixr > 255) ? 255 : pixr;
-				int pixg = (((pixtexmotion >> 8) & 0xff) + ((piximg >> 8) & 0xff));
-				pixg = (pixg > 255) ? 255 : pixg;
-				int pixb = (((pixtexmotion) & 0xff) + ((piximg) & 0xff));
-				pixb = (pixb > 255) ? 255 : pixb;
+//				int pixr = (((pixtexmotion >> 16) & 0xff) + ((piximg >> 16) & 0xff));
+//				pixr = (pixr > 255) ? 255 : pixr;
+//				int pixg = (((pixtexmotion >> 8) & 0xff) + ((piximg >> 8) & 0xff));
+//				pixg = (pixg > 255) ? 255 : pixg;
+//				int pixb = (((pixtexmotion) & 0xff) + ((piximg) & 0xff));
+//				pixb = (pixb > 255) ? 255 : pixb;
 
-				videoteximgmotion.pixels[i] = (pixtexmotion << 24)
-						| (pixr << 16) | (pixg << 8) | pixb;
+				videoteximgmotion.pixels[i] = pix;
+				//(pixtexmotion << 24) | (pixr << 16) | (pixg << 8) | pixb;
 			}
 			videoteximgmotion.updatePixels();
 		}
 
-		// if(videotexmode!=pvideotexmode && videotexchange ) {
-		if (true) {
+		if(videotexmode!=pvideotexmode){// && videotexchange ) {
 			pvideotexmode = videotexmode;
-			// videotexchange = false;
 			switch (videotexmode) {
 			default:
 			case 0:
@@ -563,23 +595,27 @@ public class Flob {
 
 	/**
 	 * set the videotex returned by flob.videotex <br>
-	 * case 0: videotex = videoimg; break;<br>
-	 * case 1: videotex = videotexbin; break;<br>
-	 * case 2: videotex = videotexmotion; break;<br>
-	 * case 3: videotex = videoteximgmotion; break;<br>
+	 * case 0: videotex = src videoimg as flob sees it (incoming image)<br>
+	 * case 1: videotex = binary image result from om==0, incoming img vs static bg<br>
+	 * case 2: videotex = binary image result from om>0, incoming img vs dynamic bg<br>
+	 * case 3: videotex = image result from incoming img + binary image<br>
 	 * 
 	 * @return void
 	 */
-	// public void setVideoTex(int t) {
 	public Flob setVideoTex(int t) {
 		videotexmode = t;
-		videotexchange = true;
+//		videotexchange = true;
 		return this;
 	}
 
 	/**
 	 * setImage sets the videotex returned by flob.videotex or flob.getSrcImage
+	 * case 0: videotex = src videoimg as flob sees it (incoming image)<br>
+	 * case 1: videotex = binary image result from om==0, incoming img vs static bg<br>
+	 * case 2: videotex = binary image result from om>0, incoming img vs dynamic bg<br>
+	 * case 3: videotex = image result from incoming img + binary image<br>
 	 * 
+	 * @param t
 	 * @return void
 	 */
 	public Flob setImage(int t) {
@@ -590,7 +626,7 @@ public class Flob {
 	/**
 	 * getImage gets the current video image worked inside flob
 	 * 
-	 * @return void
+	 * @return PImage
 	 */
 	public PImage getImage() {
 		return getSrcImage();
@@ -604,14 +640,17 @@ public class Flob {
 	 */
 	public Flob setSrcImage(int t) {
 		videotexmode = t;
-		videotexchange = true;
 		return this;
 	}
 
 	/**
 	 * setTrackFeatures turns on/off searching for feature points: armleft,
 	 * armright, head, bottom for each blob
-	 * 
+	 * if (tflob.trackfeatures[0]) b = calc_feature_head(b);
+		if (tflob.trackfeatures[1]) b = calc_feature_arms(b);
+		if (tflob.trackfeatures[2])b = calc_feature_feet(b);
+		if (tflob.trackfeatures[3])b = calc_feature_bottom(b);
+		
 	 * @return void
 	 */
 	public Flob setTrackFeatures(boolean[] tf) {
@@ -644,7 +683,7 @@ public class Flob {
 	}
 
 	/**
-	 * set the om either CONTINUOUS_DIFFERENCE (1) or STATIC_DIFFERENCE (0)
+	 * set the om either CONTINUOUS_DIFFERENCE (1) or STATIC_DIFFERENCE (0) or CONTINUOUS_EASE_DIFFERENCE (2)
 	 * 
 	 * @return this
 	 */
@@ -660,12 +699,64 @@ public class Flob {
 	}
 
 	/**
-	 * get the om either CONTINUOUS_DIFFERENCE (1) or STATIC_DIFFERENCE (0)
+	 * get the current om, either CONTINUOUS_DIFFERENCE (1) or STATIC_DIFFERENCE (0)
 	 * 
 	 * @return int
 	 */
 	public int getOm() {
 		return om;
+	}
+
+	/**
+	 * are you using floatmode?
+	 * @return @floatmode
+	 */
+	public boolean isFloatmode() {
+		return floatmode;
+	}
+
+	/**
+	 * activate floating point calculations in binarize image
+	 * @param floatmode
+	 */
+	public void setFloatmode(boolean floatmode) {
+		this.floatmode = floatmode;
+	}
+
+	/**
+	 * @return the floatsmooth
+	 */
+	public float getFloatsmooth() {
+		return floatsmooth;
+	}
+
+	/**
+	 * @param floatsmooth the floatsmooth to set
+	 */
+	public void setFloatsmooth(float floatsmooth) {
+		this.floatsmooth = floatsmooth;
+	}
+
+	/**
+	 * get @thresholdmode
+	 * 
+	 * @return thresholdmode
+	 */
+	public int getThresholdmode() {
+		return thresholdmode;
+	}
+
+	/**
+	 * set @thresholdmode
+	 * 	- @flob.ABS (0): absolute diference of incoming pixel versus background
+	 * 	- @flob.LESSER (1): if incoming pixel less than threshold, mark as white pixel in binary image
+	 * 	- @flob.GREATER (2): white if above @videothresh value
+	 * 
+	 * @param thresholdmode
+	 * 
+	 */
+	public void setThresholdmode(int thresholdmode) {
+		this.thresholdmode = thresholdmode;
 	}
 
 	/**
@@ -688,29 +779,53 @@ public class Flob {
 	}
 
 	/**
-	 * set the coords mode for the blobs returns. if true, will scale to global
-	 * world coordinates, if false, each blob returns normalized coordinates
-	 * 
-	 * @return this
+	 * @return the trackedBlobMaxDistSquared
 	 */
-	public Flob setCoordsMode(boolean t) {
-		coordsmode = t;
-		return this;
+	public static float getTrackedBlobMaxDistSquared() {
+		return trackedBlobMaxDistSquared;
 	}
 
 	/**
-	 * get the coords mode for the blobs returns. if true, will scale to global
-	 * world coordinates, if false, each blob returns normalized coordinates
-	 * 
-	 * @return boolean
+	 * @param trackedBlobMaxDistSquared the trackedBlobMaxDistSquared to set
 	 */
-	public boolean getCoordsMode() {
-		return coordsmode;
+	public static void setTrackedBlobMaxDistSquared(float trackedBlobMaxDistSquared) {
+		Flob.trackedBlobMaxDistSquared = trackedBlobMaxDistSquared;
 	}
+
+//	/**
+//	 * set the coords mode for the blobs returns. if true, will scale to global
+//	 * world coordinates, if false, each blob returns normalized coordinates
+//	 * 
+//	 * 
+//	 * @return this
+//	 */
+//	public Flob setCoordsMode(boolean t) {
+//		coordsmode = t;
+//		return this;
+//	}
+//
+//	/**
+//	 * get the coords mode for the blobs returns. if true, will scale to global
+//	 * world coordinates, if false, each blob returns normalized coordinates
+//	 * 
+//	 * @return boolean
+//	 */
+//	public boolean getCoordsMode() {
+//		return coordsmode;
+//	}
 
 	/**
 	 * set the colormode for the binarization stage. how to consider a diff pix
 	 * from background on which channel. red, green, blue, luma
+	 * 
+	 * possible @colormode values:
+	 * @flob.RED (0)
+	 * @flob.GREEN (1)
+	 * @flob.BLUE (2)
+	 * @flob.LUMA601 (3)
+	 * @flob.LUMA609 (4)
+	 * @flob.LUMAUSER (5)
+	 * 
 	 * 
 	 * @return this
 	 */
@@ -722,7 +837,7 @@ public class Flob {
 	/**
 	 * get selected colormode
 	 * 
-	 * @return int
+	 * @return String
 	 */
 	public String getColorMode() {
 		switch (colormode) {
@@ -778,9 +893,8 @@ public class Flob {
 	 */
 	public Flob setBackground(PImage video) {
 		video.loadPixels();
-		System.arraycopy(video.pixels, 0, backgroundPixels, 0,
+			System.arraycopy(video.pixels, 0, backgroundPixels, 0,
 				video.pixels.length);
-		// PApplet.arraycopy(video.pixels, backgroundPixels);
 		return this;
 	}
 
@@ -791,15 +905,16 @@ public class Flob {
 	 */
 	public Flob easeBackground(PImage video) {
 		video.loadPixels();
-		for (int i = 0; i < numPixels; i++) {
-			backgroundPixels[i] += (video.pixels[i] - backgroundPixels[i])
-					* continuous_ease;// 0.05;
-		}
+			for (int i = 0; i < numPixels; i++) {
+				backgroundPixels[i] += (int) ( ((float)video.pixels[i] - (float)backgroundPixels[i])* continuous_ease );
+			}
 		return this;
 	}
 
 	/**
 	 * gets the background image
+	 * 
+	 * // todo: incorporate float here too, but not necessary, can access @backgroundPixelsF directly if needed
 	 * 
 	 * @return int[]
 	 */
@@ -816,7 +931,7 @@ public class Flob {
 	 * @return this
 	 */
 	public Flob setTresh(float t) {
-//		videothresh = t;
+		videothreshf = t;
 		videothresh = (int) t;
 		return this;
 	}
@@ -828,41 +943,41 @@ public class Flob {
 	 */
 	public Flob setThresh(float t) {
 		videothresh = (int) t;
-//		videothresh = t;
+		videothreshf = t;
 		return this;
 	}
 
 	/**
 	 * get the threshold value to the image binarization
 	 * 
-	 * @return int
+	 * @return float @videothresh
 	 */
-	public int getThresh() {
-		return videothresh;
+	public float getThresh() {
+		return videothreshf;
 	}
 
 	/**
-	 * set the fade value to continuos_difference mode
+	 * set the fade value in flob.om > 0
 	 * 
 	 * @return this
 	 */
 	public Flob setFade(float t) {
-//		videofade = t;
+		videofadef = t;
 		videofade = (int)t;
 		return this;
 	}
 
 	/**
-	 * get the fade value to continuos_difference mode
+	 * get the fade value in flob.om > 0
 	 * 
-	 * @return int
+	 * @return float @videofade
 	 */
 	public float getFade() {
 		return videofade;
 	}
 
 	/**
-	 * mirror video data along X axis
+	 * mirror video data along X axis?
 	 * 
 	 * @return this
 	 */
@@ -872,7 +987,7 @@ public class Flob {
 	}
 
 	/**
-	 * mirror video data along Y axis
+	 * mirror video data along Y axis?
 	 * 
 	 * @return this
 	 */
@@ -910,7 +1025,7 @@ public class Flob {
 	 * @return this
 	 */
 	public Flob setMinNumPixels(int t) {
-		imageblobs.ninpix = t;
+		imageblobs.setminpix(t);
 		return this;
 	}
 
@@ -930,7 +1045,7 @@ public class Flob {
 	 * @return int
 	 */
 	public int getMinNumPixels() {
-		return imageblobs.ninpix;
+		return imageblobs.minpix;
 	}
 
 	/**
@@ -948,8 +1063,7 @@ public class Flob {
 	 * @return this
 	 */
 	public Flob setTrackingMinDist(float s) {
-		imageblobs.trackingmindist = s; // thanks Niko Knappe for spotting this!
-		// imageblobs.setSmoothib(s);
+		imageblobs.trackingmindist = s; // thanks Niko Knappe for spotting this
 		return this;
 	}
 
@@ -963,7 +1077,7 @@ public class Flob {
 	}
 
 	/**
-	 * set smooth of blob speeds
+	 * set smooth factor for blob speeds changes
 	 * 
 	 * @return this
 	 */
@@ -1329,8 +1443,8 @@ public class Flob {
 	public float[] getPreviousCurrentCentroid(int i) {
 		float centroid[] = new float[4];
 		ABlob blob = imageblobs.theblobs.get(i);
-		centroid[0] = blob.cx * worldwidth;
-		centroid[1] = blob.cy * worldheight;
+		centroid[0] = blob.cx;// * worldwidth;
+		centroid[1] = blob.cy;// * worldheight;
 		return centroid;
 	}
 
@@ -1344,8 +1458,8 @@ public class Flob {
 	public float[] getPreviousCurrentCentroidMass(int i) {
 		float centroid[] = new float[5];
 		ABlob blob = imageblobs.theblobs.get(i);
-		centroid[0] = blob.cx * worldwidth;
-		centroid[1] = blob.cy * worldheight;
+		centroid[0] = blob.cx;// * worldwidth;
+		centroid[1] = blob.cy;// * worldheight;
 		centroid[4] = blob.pixelcount;
 		return centroid;
 	}
@@ -1360,8 +1474,8 @@ public class Flob {
 	public float[] getDim(int i) {
 		float centroid[] = new float[2];
 		ABlob blob = imageblobs.theblobs.get(i);
-		centroid[0] = blob.dimx * worldwidth;
-		centroid[1] = blob.dimy * worldheight;
+		centroid[0] = blob.dimx;// * worldwidth;
+		centroid[1] = blob.dimy;// * worldheight;
 		return centroid;
 	}
 
@@ -1375,9 +1489,6 @@ public class Flob {
 	 */
 
 	public int[] getBox(int i) {
-		// no, changed again, simple box output
-		// no, changed, getBox gets the centroid+width+height to pass to
-		// graphics
 
 		int box[] = new int[4];
 
@@ -1422,8 +1533,8 @@ public class Flob {
 	 */
 
 	public boolean testPos(float x, float y) {
-		x = PApplet.constrain(x, 0.f, 1.f);
-		y = PApplet.constrain(y, 0.f, 1.f);
+		x = app.constrain(x, 0.f, 1.f);
+		y = app.constrain(y, 0.f, 1.f);
 		int px = (int) (x * imageblobs.w);
 		int py = (int) (y * imageblobs.h);
 		return imageblobs.imagemap[py * imageblobs.w + px];
