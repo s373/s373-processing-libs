@@ -97,6 +97,7 @@ void draw() {
      blobs = flob.calc(flob.binarize(videoinput));
   }
 
+  background(0);
   image(flob.getSrcImage(), 0, 0, width, height);
 
   rectMode(CENTER);

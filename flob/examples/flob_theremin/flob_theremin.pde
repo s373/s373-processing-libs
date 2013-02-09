@@ -78,7 +78,7 @@ void draw() {
     vrImage.copy(video, 0, 0, 320, 240, 0, 0, videores, videores);
     blobs = flob.calc(flob.binarize(vrImage));
   }
-
+  background(0);
   image(flob.getSrcImage(), 0, 0, width, height);
 
   rectMode(CENTER);
@@ -95,7 +95,7 @@ void draw() {
 
     if (i<10) {
 //      sine[i].setFreq( map(ab.cy, 0, height, 2000, 200) );
-      sine[i].setFreq( mtof(map(ab.cy, 0, height, 120, 50) ));
+      sine[i].setFreq( mtof(map(ab.cy, 0, height, 120, 40) ));
     }
 
 
@@ -112,10 +112,10 @@ void draw() {
   int activesounds = min(10, numblobs);
   for (int i=0; i<10;i++) {
     if (i<activesounds) {
-      sine[i].setAmp( 1.0 / activesounds);
+      sine[i].setAmp( 0.9f / activesounds);
     } 
     else {
-      sine[i].setAmp( 0.0);
+      sine[i].setAmp( 0.0001f);
     }
   }
 

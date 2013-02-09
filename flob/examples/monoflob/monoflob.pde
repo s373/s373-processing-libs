@@ -1,5 +1,5 @@
 /*
-  monoflob 
+  s373Monoflob 
   (vs. 20090621)
   
   started out as buttons to trigger things, ended up
@@ -33,7 +33,7 @@ int videotex = 3;//0;
 int colormode = flob.BLUE;
 float fps = 60;
 
-Monoflob mono;
+s373Monoflob mono;
 
 void setup(){
 //  //bug 882 processing 1.0.1
@@ -57,7 +57,7 @@ void setup(){
   font = createFont("monaco",16);
   textFont(font);
 
-  mono = new Monoflob(4,4);
+  mono = new s373Monoflob(4,4);
   //(20,20);//(10,10);//(3,3);//(5,4);
 }
 
@@ -106,7 +106,7 @@ void keyPressed(){
   if(key=='b')
     drawimg^=true;
   if (key=='s')
-    saveFrame("monoflob-######.png");
+    saveFrame("s373Monoflob-######.png");
   if (key=='i'){  
     videotex = (videotex+1)%4;
     flob.setImage(videotex);
@@ -140,4 +140,106 @@ void keyPressed(){
 }
 
 
+
+
+class Botao {
+  int id;
+  float x, y, w, h,w2,h2;
+  int coroff,coron;
+  int gain; 
+  boolean on = false;
+  boolean touch = false;
+
+  Botao(int i,  float _x, float _y, float _w , float _h  ) {
+    id = i;
+    x = _x;
+    y = _y;
+    w = _w;
+    h = _h;
+    w2 = w*0.5f;
+    h2 = h*0.5f;    
+    coroff = color(50);
+    coron = color(0,250,0);
+  } 
+
+
+  void test(float _x, float _y, float dimx, float dimy) {
+    float dx = x - _x;
+    float dy = y - _y;
+    if(abs(dx) <= (w2+dimx*0.5) && abs(dy) <= (h2+dimy*0.5)){
+      gain++;  
+      touch = true;
+    }
+  }
+
+  void state(){    
+    if(touch)
+      touch=false;
+    else
+      gain--;
+      
+    if(gain>100){
+      gain = 100;
+      on = true; 
+    }
+    if(gain<50)
+      on = false;
+    if(gain<0)
+      gain=0;
+  }
+
+  void render(){
+    state();
+    fill(on ? coron : coroff,map(gain,0,100,10,255));    
+    rect(x,y,w,h);
+    fill(255);
+    text(""+gain,x,y);
+    text(""+id,x,y+h2-2);
+  }
+
+}
+
+
+
+
+
+class s373Monoflob{
+  Botao b[];
+  int gx,gy,num;
+  float dimx,dimy;
+  float sizex,sizey;//1.0 max
+  
+  s373Monoflob(int _gx, int _gy){
+    gx = _gx;
+    gy = _gy;
+    sizex = 0.75;
+    sizey = 0.55;
+    float stridex = (float)width / (float)gx;
+    float stridey = (float)height / (float)gy;
+    dimx = stridex * sizex ;
+    dimy = stridey * sizey ;
+    
+    num = gx * gy;    
+    b = new Botao[num];
+
+    for(int i=0; i<num;i++){
+       float x =  ((float)(i % gx) +0.5) * stridex  ;
+       float y = ((float)(i / gx) +0.5) *stridey ;
+       b[i] = new Botao(i, x,y,dimx,dimy);      
+    }        
+        
+  }
+  
+  void touch(float x, float y,float w, float h){    
+    for(int i=0; i<num; i++)
+      b[i].test(x,y,w,h);    
+  }
+
+  void render(){
+    for(int i=0; i<num; i++)
+      b[i].render();   
+  }
+
+
+}
 

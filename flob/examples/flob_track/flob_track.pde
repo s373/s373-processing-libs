@@ -14,7 +14,7 @@ int tresh = 10;
 int fade = 25;
 int om = 0;
 int videores=128;
-int videotex=0;//3
+int videotex=3;
 boolean drawimg=true;
 String info="";
 float fps = 60;
@@ -49,6 +49,7 @@ void draw(){
     videoinput.copy(video, 0, 0, 320, 240, 0, 0, videores, videores);
     blobs = flob.track(  flob.binarize(videoinput) );    
   }
+  background(0);
   image(flob.getSrcImage(), 0, 0, width, height);
 
   fill(255,100);

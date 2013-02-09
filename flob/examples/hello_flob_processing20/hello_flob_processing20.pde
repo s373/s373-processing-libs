@@ -96,8 +96,8 @@ void draw() {
      videoinput.copy(video,0,0,320,240,0,0,videores,videores);
      blobs = flob.calc(flob.binarize(videoinput));
   }
-
-  image(flob.getSrcImage(), 0, 0, width, height);
+  background(0);
+  image(flob.getImage(), 0, 0, width, height);
 
   rectMode(CENTER);
 

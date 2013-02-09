@@ -26,12 +26,6 @@
  * @url			http://s373.net/code/flob
  */
 
-/**
- * version 0.2.2y documentation assistance and
- * by Mahesh Viswanathan <mahesh@tinymogul.com>
- * 
- * dont know how you want to be credited, please change this as you see fit
- */
 package s373.flob;
 
 
@@ -81,9 +75,7 @@ import processing.core.PImage;
 	 *            
 	 * the greyscale luminance image is then binarized using the            <br/>
 	 * @videothresh value as reference.           <br/>
-	 *            <br/>
-	 *            <br/>
-           <br/>
+	 * <br/>
 	 * to calculate the binary image, now Flob takes @thresholdmode            <br/>
 	 * to specify the operation to calculate the binary image.            <br/>
 	 * possible values include:           <br/>
@@ -263,6 +255,7 @@ public class Flob {
 	 * thanks Eduardo Pinto & Fausto Fonseca for feedback 
 	 * during osomdopensamento.wordpress.com @ fbaul, 2009
 	 * 
+	 * thanks Mahesh Viswanathan for feedback, feb 2013
 	 * 
 	 * Flob receives an ARGB Processing PImage as input and converts 
 	 * rgb->luma (luminance, greyscale image) using one of several 
@@ -980,7 +973,7 @@ public class Flob {
 	 * @return float @videofade
 	 */
 	public float getFade() {
-		return videofade;
+		return videofadef;
 	}
 
 	/**

@@ -1,12 +1,22 @@
 /*
-  sonicmonoflob
+  sonics373Monoflob
   (vs. 20101220)
   
-  sonic version of monoflob, here a polyphonic 49 voice synth (7x7 monoflob)
+  sonic version of s373Monoflob, here a polyphonic 49 voice synth (7x7 s373Monoflob)
   where each button has a sine wave you can fade or turn on/off (b)
   
-  andré sier 
+  André Sier 
   http://s373.net
+  
+  if you play with this live, or for a recording,
+  please credit!
+  
+  this is similar to my live instrument, have a look at 410
+  http://uunniivveerrssee.net/datascape/uunnii-pieces/410-2
+  https://vimeo.com/23325260, or work done under UR (s373.net/ur)
+  
+  this sketch is licensed under 
+  http://creativecommons.org/licenses/by/3.0/
  
  */
 float wavemaxamp = 0.11;
@@ -34,7 +44,7 @@ int videotex = 3;//0;
 int colormode = flob.BLUE;
 float fps = 60;
 
-Monoflob mono;
+s373Monoflob mono;
 Minim minim;
 AudioOutput out;
 
@@ -43,7 +53,7 @@ void setup(){
 //  try { quicktime.QTSession.open(); } 
 //  catch (quicktime.QTException qte) { qte.printStackTrace(); }
 
-  size(700,700,OPENGL);
+  size(1024,720,OPENGL);
   frameRate(fps);
   rectMode(CENTER);
 
@@ -63,7 +73,7 @@ void setup(){
   minim = new Minim(this);  
   out = minim.getLineOut(Minim.STEREO);
 
-  mono = new Monoflob(7,7);
+  mono = new s373Monoflob(7,7);
   //(20,20);//(10,10);//(3,3);//(5,4);
 }
 
@@ -77,8 +87,8 @@ void draw(){
     blobs = flob.calc(flob.binarize(videoinput));    
   }
 
-  if(drawimg)
-    image(flob.getImage(), 0, 0, width, height);
+  background(0);
+  image(flob.getImage(), 0, 0, width, height);
 
   rectMode(CENTER);
   int numblobs = blobs.size();//flob.getNumBlobs();  
@@ -120,7 +130,7 @@ void keyPressed(){
   if(key=='b')
     buttonOm^=true;
   if (key=='s')
-    saveFrame("monoflob-######.png");
+    saveFrame("s373Monoflob-######.png");
   if (key=='i'){  
     videotex = (videotex+1)%4;
     flob.setImage(videotex);
@@ -157,3 +167,116 @@ void keyPressed(){
 float mtof(float midi){  
   return  (440.0f * pow(2, ((midi-69.0) / 12.0)) );  
 }
+
+
+class Botao {
+  int id;
+  float x, y, w, h,w2,h2;
+  int coroff,coron;
+  int gain; 
+  boolean on = false;
+  boolean touch = false;
+  
+  SineWave wave;
+
+  Botao(int i,  float _x, float _y, float _w , float _h  ) {
+    id = i;
+    x = _x;
+    y = _y;
+    w = _w;
+    h = _h;
+    w2 = w*0.5f;
+    h2 = h*0.5f;    
+    coroff = color(50);
+    coron = color(0,250,0);
+    
+    wave = new SineWave( mtof(27+i*3) , 0.25, out.sampleRate());
+    wave.portamento(477);
+    out.addSignal(wave);
+  } 
+
+
+  void test(float _x, float _y, float dimx, float dimy) {
+    float dx = x - _x;
+    float dy = y - _y;
+    if(abs(dx) <= (w2+dimx*0.5) && abs(dy) <= (h2+dimy*0.5)){
+      gain++;  
+      touch = true;
+    }
+  }
+
+  void state(){    
+    if(touch)
+      touch=false;
+    else
+      gain--;
+      
+    if(gain>100){
+      gain = 100;
+      on = true; 
+    }
+    if(gain<50)
+      on = false;
+    if(gain<0)
+      gain=0;
+      
+    if(buttonOm){
+      if(on) { wave.setAmp(wavemaxamp); } else { wave.setAmp(0); }
+    } else{
+      wave.setAmp(map(gain,0,100,0.,wavemaxamp));
+    }  
+  }
+
+  void render(){
+    state();
+    fill(on ? coron : coroff,map(gain,0,100,10,255));    
+    rect(x,y,w,h);
+    fill(255);
+    text(""+gain,x,y);
+    text(""+id,x,y+h2-2);
+  }
+
+}
+
+
+
+class s373Monoflob{
+  Botao b[];
+  int gx,gy,num;
+  float dimx,dimy;
+  float sizex,sizey;//1.0 max
+  
+  s373Monoflob(int _gx, int _gy){
+    gx = _gx;
+    gy = _gy;
+    sizex = 0.75;
+    sizey = 0.55;
+    float stridex = (float)width / (float)gx;
+    float stridey = (float)height / (float)gy;
+    dimx = stridex * sizex ;
+    dimy = stridey * sizey ;
+    
+    num = gx * gy;    
+    b = new Botao[num];
+
+    for(int i=0; i<num;i++){
+       float x =  ((float)(i % gx) +0.5) * stridex  ;
+       float y = ((float)(i / gx) +0.5) *stridey ;
+       b[i] = new Botao(i, x,y,dimx,dimy);      
+    }        
+        
+  }
+  
+  void touch(float x, float y,float w, float h){    
+    for(int i=0; i<num; i++)
+      b[i].test(x,y,w,h);    
+  }
+
+  void render(){
+    for(int i=0; i<num; i++)
+      b[i].render();   
+  }
+
+
+}
+
