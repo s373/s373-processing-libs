@@ -22,13 +22,13 @@
  * 
  * @author      Andre Sier 
  * @modified    20130208
- * @version     0.2.2y (22)
+ * @version     0.2.3z (23)
  * @url			http://s373.net/code/flob
  */
 
 package s373.flob;
 
-
+// cpp
 //import s373.flob.baseBlob;
 //import s373.flob.ABlob;
 //import s373.flob.trackedBlob;
@@ -150,10 +150,11 @@ public class Flob {
 	public int blobpixmin = 0;
 	public int blobpixmax = 0;
 
-	public static int trackedBlobLifeTime = 5; // 60
-	public static float trackedBlobMaxDistSquared = 2555f;
+	public static int TBlobLifeTime = 5; // 60
+	public static float TBlobMaxDistSquared = 2555f;
+	public boolean trackedBlobDoSorting = false;
 
-	public static String VERSION = "flob 0.2.2y - built ";
+	public static String VERSION = "flob 0.2.3z - built ";
 
 
 	/**
@@ -764,55 +765,35 @@ public class Flob {
 	 * 
 	 * @return void
 	 */
-	public Flob settrackedBlobLifeTime(int t) {
-		trackedBlobLifeTime = t;
+	public Flob setTBlobLifeTime(int t) {
+		TBlobLifeTime = t;
 		return this;
 	}
 
 	/**
-	 * get the max lifetime for a trackedblob
+	 * get the max lifetime for a TBlob
 	 * 
 	 * @return int
 	 */
-	public int gettrackedBlobLifeTime() {
-		return trackedBlobLifeTime;
+	public int getTBlobLifeTime() {
+		return TBlobLifeTime;
 	}
 
 	/**
-	 * @return the trackedBlobMaxDistSquared
+	 * @return the TBlobMaxDistSquared
 	 */
-	public static float getTrackedBlobMaxDistSquared() {
-		return trackedBlobMaxDistSquared;
+	public static float getTBlobMaxDistSquared() {
+		return TBlobMaxDistSquared;
 	}
 
 	/**
-	 * @param trackedBlobMaxDistSquared the trackedBlobMaxDistSquared to set
+	 * setTBlobMaxDistSquared
+	 * @param  the trackedBlobMaxDistSquared to set
 	 */
-	public static void setTrackedBlobMaxDistSquared(float trackedBlobMaxDistSquared) {
-		Flob.trackedBlobMaxDistSquared = trackedBlobMaxDistSquared;
+	public static void setTBlobMaxDistSquared(float trackedBlobMaxDistSquared) {
+		Flob.TBlobMaxDistSquared = trackedBlobMaxDistSquared;
 	}
 
-//	/**
-//	 * set the coords mode for the blobs returns. if true, will scale to global
-//	 * world coordinates, if false, each blob returns normalized coordinates
-//	 * 
-//	 * 
-//	 * @return this
-//	 */
-//	public Flob setCoordsMode(boolean t) {
-//		coordsmode = t;
-//		return this;
-//	}
-//
-//	/**
-//	 * get the coords mode for the blobs returns. if true, will scale to global
-//	 * world coordinates, if false, each blob returns normalized coordinates
-//	 * 
-//	 * @return boolean
-//	 */
-//	public boolean getCoordsMode() {
-//		return coordsmode;
-//	}
 
 	/**
 	 * set the colormode for the binarization stage. how to consider a diff pix
@@ -887,7 +868,8 @@ public class Flob {
 	}
 
 	/**
-	 * sets the background to compare to to this PImage
+	 * sets the background to compare to to this PImage.
+	 * video param image *must* be <= internal flob dims. 
 	 * 
 	 * @return this
 	 */
@@ -899,7 +881,8 @@ public class Flob {
 	}
 
 	/**
-	 * ease the background to compare to to this PImage
+	 * ease the background to compare to to this PImage.
+	 * video param image *must* be <= internal flob dims.
 	 * 
 	 * @return this
 	 */
@@ -1115,6 +1098,20 @@ public class Flob {
 	}
 
 	/**
+	 * @return the trackedBlobDoSorting
+	 */
+	public boolean isTrackedBlobDoSorting() {
+		return trackedBlobDoSorting;
+	}
+
+	/**
+	 * @param trackedBlobDoSorting the trackedBlobDoSorting to set
+	 */
+	public void setTrackedBlobDoSorting(boolean trackedBlobDoSorting) {
+		this.trackedBlobDoSorting = trackedBlobDoSorting;
+	}
+
+	/**
 	 * calcs with current PImage. PImage must be binary image by this stage.
 	 * returns the arraylist of the blobs
 	 * 
@@ -1131,7 +1128,7 @@ public class Flob {
 	 * 
 	 * @return ArrayList
 	 */
-	public ArrayList<trackedBlob> track(PImage img) {
+	public ArrayList<TBlob> track(PImage img) {
 		imageblobs.calc(img); // calc current blobs
 		imageblobs.dotracking();
 		return imageblobs.trackedblobs;
@@ -1144,7 +1141,7 @@ public class Flob {
 	 * @return ArrayList
 	 */
 
-	public ArrayList<trackedBlob> tracksimple(PImage img) {
+	public ArrayList<TBlob> tracksimple(PImage img) {
 		imageblobs.calc(img);
 		return imageblobs.tracksimpleAL();
 	}
@@ -1156,7 +1153,7 @@ public class Flob {
 	 * @return ArrayList
 	 */
 
-	public ArrayList<trackedBlob> calcsimple(PImage img) {
+	public ArrayList<TBlob> calcsimple(PImage img) {
 		imageblobs.calc(img);
 		return imageblobs.calcsimpleAL();
 	}
@@ -1195,13 +1192,17 @@ public class Flob {
 	 * 
 	 * @return trackedBlob
 	 */
-	public trackedBlob getTrackedBlob(int i) {
+	public TBlob getTrackedBlob(int i) {
 
-		trackedBlob tb = imageblobs.trackedblobs.get(i);
+		TBlob tb = imageblobs.trackedblobs.get(i);
 		return tb;
 
 	}
+	public TBlob getTBlob(int i) {
 
+		return imageblobs.trackedblobs.get(i);
+
+	}
 	/**
 	 * getPreviousTrackedBlob returns the nth tracked previous blob of the
 	 * tracker<br>
@@ -1209,10 +1210,15 @@ public class Flob {
 	 * <br>
 	 */
 
-	public trackedBlob getPreviousTrackedBlob(int i) {
+	public TBlob getPreviousTrackedBlob(int i) {
 
-		trackedBlob tb = imageblobs.prevtrackedblobs.get(i);
+		TBlob tb = imageblobs.prevtrackedblobs.get(i);
 		return tb;
+
+	}
+	public TBlob getPreviousTBlob(int i) {
+
+		return imageblobs.prevtrackedblobs.get(i);
 
 	}
 
@@ -1295,7 +1301,7 @@ public class Flob {
 
 	public float[] getTrackedSimpleBlob(int i) {
 		float data[] = new float[12];
-		trackedBlob tb = imageblobs.trackedblobs.get(i);
+		TBlob tb = imageblobs.trackedblobs.get(i);
 		data[0] = tb.id;
 		data[1] = tb.cx * worldwidth;
 		data[2] = tb.cy * worldheight;
@@ -1321,13 +1327,18 @@ public class Flob {
 		return imageblobs.theblobs.size();
 	}
 
-	public int getNumTrackedBlobs() {
+	/**
+	 * getNumTBlobs. should be called after calc.
+	 * 
+	 * @return int
+	 */	
+	public int getNumTBlobs() {
 		return imageblobs.trackedblobs.size();
 	}
 
-	public int getNumTrackedSimpleBlobs() {
-		return imageblobs.tbsimplelist.size();
-	}
+//	public int getNumTrackedSimpleBlobs() {
+//		return imageblobs.tbsimplelist.size();
+//	}
 
 	public int getNumQuadBlobs() {
 		return imageblobs.quadblobslist.size();
@@ -1342,7 +1353,7 @@ public class Flob {
 
 	public float[] getTrackedBlobf(int i) {
 		float data[] = new float[12];
-		trackedBlob tb = imageblobs.trackedblobs.get(i);
+		TBlob tb = imageblobs.trackedblobs.get(i);
 		data[0] = tb.id;
 		data[1] = tb.cx * worldwidth;
 		data[2] = tb.cy * worldheight;

@@ -34,7 +34,7 @@ import processing.core.PImage;
  */
 
 public class ImageBlobs {
-	public int idnumbers = 0;
+	public static int idnumbers = 0;
 	public int numblobs, prevnumblobs;
 	public int trackednumblobs, prevtrackednumblobs;
 	public int lifetime = 100;// 1000;
@@ -53,9 +53,9 @@ public class ImageBlobs {
 	public float trackingmindist = 500; // ~22pix (squared)
 	public ArrayList<ABlob> theblobs = null;
 	public ArrayList<ABlob> prevblobs = null;
-	public ArrayList<trackedBlob> trackedblobs = null;
-	public ArrayList<trackedBlob> prevtrackedblobs = null;
-	public ArrayList<trackedBlob> tbsimplelist = null;
+	public ArrayList<TBlob> trackedblobs = null;
+	public ArrayList<TBlob> prevtrackedblobs = null;
+//	public ArrayList<TBlob> tbsimplelist = null;
 	public ArrayList<quadBlob> quadblobslist = null;
 	public ArrayList<pt2> thecoords = null;
 	private Flob tflob;
@@ -70,12 +70,12 @@ public class ImageBlobs {
 
 	ImageBlobs(Flob flob) { // /constructor
 		tflob = flob;
-		trackedblobs = new ArrayList<trackedBlob>();
-		prevtrackedblobs = new ArrayList<trackedBlob>();
+		trackedblobs = new ArrayList<TBlob>();
+		prevtrackedblobs = new ArrayList<TBlob>();
 		theblobs = new ArrayList<ABlob>();
 		prevblobs = new ArrayList<ABlob>();
 		thecoords = new ArrayList<pt2>();
-		tbsimplelist = new ArrayList<trackedBlob>();
+//		tbsimplelist = new ArrayList<TBlob>();
 		quadblobslist = new ArrayList<quadBlob>();
 		numblobs = prevnumblobs = 0;
 		trackednumblobs = prevtrackednumblobs = 0;
@@ -117,26 +117,27 @@ public class ImageBlobs {
 		return theblobs;
 	}
 
-	void query() {
-		System.out.print("query blobdata\n");
-		System.out.print("numblobs " + numblobs + "\n");
-		for (int i = 0; i < theblobs.size(); i++) {
-			ABlob b = theblobs.get(i);
-			System.out.print("blob" + b.id + " pix" + b.pixelcount + " coords "
-					+ b.boxminx + " " + b.boxminy + " " + b.boxmaxx + " "
-					+ b.boxmaxy + "  center " + b.boxcenterx + " "
-					+ b.boxcentery + "\n");
-		}
-	}
+//	void query() {
+//		System.out.print("query blobdata\n");
+//		System.out.print("numblobs " + numblobs + "\n");
+//		for (int i = 0; i < theblobs.size(); i++) {
+//			ABlob b = theblobs.get(i);
+//			System.out.print("blob" + b.id + " pix" + b.pixelcount + " coords "
+//					+ b.boxminx + " " + b.boxminy + " " + b.boxmaxx + " "
+//					+ b.boxmaxy + "  center " + b.boxcenterx + " "
+//					+ b.boxcentery + "\n");
+//		}
+//	}
 
 	void calc(PImage pimage) {
-		int min0 = 10000;
+		int min0 = 1000000;
 		int max0 = -100;
 		pt2 p = new pt2();
 		pt2 p2 = new pt2();
 		int pixelcount = 0;
 		ABlob b = new ABlob();
 		copy_blobs_to_previousblobs();
+		int prevblobssize = prevblobs.size();
 		thecoords.clear();
 		// if (w != pimage.width) {
 		// calcdims(pimage.width, pimage.height, tflob.worldwidth,
@@ -156,7 +157,7 @@ public class ImageBlobs {
 						p.x = i;
 						p.y = j;
 						thecoords.add(p);
-						pixelcount = 0;
+						pixelcount = 1;//0;
 						b.boxminx = i;
 						b.boxmaxx = i;
 						b.boxminy = j;
@@ -193,18 +194,30 @@ public class ImageBlobs {
 						}
 
 						if (pixelcount >= minpix && pixelcount <= maxpix) {
+							
 							b.id = numblobs;
 							b.pixelcount = pixelcount;
-							b.boxcenterx = (int) ((b.boxminx + b.boxmaxx) * 0.5);
-							b.boxcentery = (int) ((b.boxminy + b.boxmaxy) * 0.5);
+//							b.boxcenterx = (int) ((b.boxminx + b.boxmaxx) * 0.5);
+//							b.boxcentery = (int) ((b.boxminy + b.boxmaxy) * 0.5);
+							b.boxcenterx = (b.boxminx + b.boxmaxx) /2;
+							b.boxcentery = (b.boxminy + b.boxmaxy) /2;
 							b.boxdimx = b.boxmaxx - b.boxminx;
 							b.boxdimy = b.boxmaxy - b.boxminy;
 							b.cx = b.boxcenterx * wcoordsx;
 							b.cy = b.boxcentery * wcoordsy;
 							b.bx = b.boxminx * wcoordsx;
 							b.by = b.boxminy * wcoordsy;
-							b.dimx = ((b.boxmaxx - b.boxminx) * wcoordsx);
-							b.dimy = ((b.boxmaxy - b.boxminy) * wcoordsy);
+							b.dimx = b.boxdimx*wcoordsx;//((b.boxmaxx - b.boxminx) * wcoordsx);
+							b.dimy = b.boxdimy*wcoordsy;//((b.boxmaxy - b.boxminy) * wcoordsy);
+							if(b.id < prevblobssize){
+								ABlob pb = prevblobs.get(b.id);
+								b.pboxcenterx = pb.boxcenterx;
+								b.pboxcentery = pb.boxcentery;
+//								b.velx = b.boxcenterx-b.pboxcenterx; // inside
+//								b.vely = b.boxcentery-b.pboxcentery;
+							}
+							
+							
 							if (tflob.getAnyFeatureActive()) {
 								if (tflob.trackfeatures[0])	b = calc_feature_head(b);
 								if (tflob.trackfeatures[1]) b = calc_feature_arms(b);								
@@ -667,16 +680,16 @@ public class ImageBlobs {
 	 * 
 	 */
 
-	public ArrayList<trackedBlob> calcsimpleAL() {
+	public ArrayList<TBlob> calcsimpleAL() {
 
-		trackedblobs.clear();// = new ArrayList<trackedBlob>();
-		trackedBlob b1, b2;
+		trackedblobs.clear();
+		TBlob b1, b2;
 		ABlob ab;
 
 		for (int i = 0; i < theblobs.size(); i++) {
 			ab = theblobs.get(i);
-			b1 = new trackedBlob(ab);
-			b2 = (i >= prevblobs.size()) ? null : new trackedBlob(
+			b1 = new TBlob(ab);
+			b2 = (i >= prevblobs.size()) ? null : new TBlob(
 					prevblobs.get(i));
 			if (b2 != null) {
 
@@ -756,6 +769,7 @@ public class ImageBlobs {
 			b1.rad2 = b1.rad * b1.rad;
 
 			trackedblobs.add(b1);
+			
 
 		}
 
@@ -775,21 +789,20 @@ public class ImageBlobs {
 	 */
 
 	// /// simple tracking code in flob
-	public ArrayList<trackedBlob> tracksimpleAL() {
-		// tbsimplelist = new ArrayList<trackedBlob>();
-		prevtrackedblobs = new ArrayList<trackedBlob>();
+	public ArrayList<TBlob> tracksimpleAL() {
+		prevtrackedblobs.clear();
 		for (int i = 0; i < trackedblobs.size(); i++) {
 			prevtrackedblobs.add(trackedblobs.get(i));
 		}
 
 		trackedblobs.clear();
-		trackedBlob b1, b2;
+		TBlob b1, b2;
 		ABlob ab;
 
 		for (int i = 0; i < theblobs.size(); i++) {
 			ab = theblobs.get(i);
-			b1 = new trackedBlob(ab);
-			b2 = (i >= prevnumblobs) ? null : new trackedBlob(
+			b1 = new TBlob(ab);
+			b2 = (i >= prevnumblobs) ? null : new TBlob(
 					prevtrackedblobs.get(i));
 			if (b2 != null) {
 				b1.id = b2.id;
@@ -849,23 +862,25 @@ public class ImageBlobs {
 
 	// /// tracking code
 
-	void addTrackedBlob(trackedBlob b) {
-		// b.id = b.id;//idnumbers++;
-		// b.birthtime=System.currentTimeMillis();
-		// b.presencetime=0;
-		b.presencetime++;
-		trackednumblobs++;
-		trackedblobs.add(b);
-	}
+//	void addTrackedBlob(TBlob b) {
+//		// b.id = b.id;//idnumbers++;
+//		// b.birthtime=System.currentTimeMillis();
+//		// b.presencetime=0;
+//		b.presencetime++;
+//		trackednumblobs++;
+//		trackedblobs.add(b);
+//	}
 
-	void addNewBlob(trackedBlob b) {
-		b.id = idnumbers++;
-		b.birthtime = System.currentTimeMillis();
-		b.presencetime = 0;
-		// add new box to it
-		trackednumblobs++;
-		trackedblobs.add(b);
-	}
+//	void addNewBlob(TBlob b) {
+//
+////		// inside TBlob
+////		b.id = idnumbers++;
+////		b.birthtime = System.currentTimeMillis();
+////		b.presencetime = 0;
+//		// add new box to it
+//		trackednumblobs++;
+//		trackedblobs.add(b);
+//	}
 
 	/**
 	 * void dotracking()<br>
@@ -883,20 +898,19 @@ public class ImageBlobs {
 
 	void dotracking() {
 		// / copy current tracked blob to prev tracked blob and increment life
-
 		prevtrackednumblobs = trackednumblobs;
 		trackednumblobs = 0;
-		prevtrackedblobs.clear();// = new ArrayList<trackedBlob>();
+		prevtrackedblobs.clear();
 		for (int i = 0; i < trackedblobs.size(); i++) {
-			trackedBlob tb = trackedblobs.get(i);
+			TBlob tb = trackedblobs.get(i);
 			// tb.presencetime++;
 			prevtrackedblobs.add(tb);
 		}
 
 		// new arraylist of trackedblobs
-		trackedblobs.clear();// = new ArrayList<trackedBlob>();
+		trackedblobs.clear();
 
-		// always init tracking, unlink all blobs, do this every frame
+		// always init tracking, unlink all blobs
 		for (int i = 0; i < prevtrackedblobs.size(); i++) {
 			prevtrackedblobs.get(i).linked = false;
 		}
@@ -907,16 +921,20 @@ public class ImageBlobs {
 		// always
 		doremoveprevblobs();
 
-		sorttrackedblobs();
-
+		if(tflob.trackedBlobDoSorting){
+			sorttrackedblobs();
+		}
+		
 		if (trackedblobs.size() < 1 && idnumbers != 0) { // reset id count
 			idnumbers = 0;
 		}
 	}
 
+	
+	
 	void sorttrackedblobs() {
 
-		ArrayList<trackedBlob> temp = new ArrayList<trackedBlob>();
+		ArrayList<TBlob> temp = new ArrayList<TBlob>();
 
 		if (trackedblobs.size() > 0) {
 
@@ -924,7 +942,7 @@ public class ImageBlobs {
 				int minid2 = (int) 2e63 - 1;// Math.MA100000000;
 				int who = -1;
 				for (int j = 0; j < trackedblobs.size(); j++) {
-					trackedBlob tb = trackedblobs.get(i);
+					TBlob tb = trackedblobs.get(i);
 					if (tb.id < minid2) {
 						minid2 = tb.id;
 						who = j;
@@ -946,7 +964,7 @@ public class ImageBlobs {
 	boolean matchblobprevtrackedblobs(ABlob ab) {
 
 		boolean matched = false;
-		float mintrackeddist = 10000;
+		float mintrackeddist = 1000000;
 		int who = -1;
 		float mindist = trackingmindist;// 1000;///2500;//1000; //
 		// float vx0=0f;
@@ -954,7 +972,7 @@ public class ImageBlobs {
 
 		for (int i = prevtrackedblobs.size() - 1; i >= 0; i--) {
 
-			trackedBlob prev = prevtrackedblobs.get(i);
+			TBlob prev = prevtrackedblobs.get(i);
 			if (prev.linked)
 				continue;
 
@@ -965,14 +983,12 @@ public class ImageBlobs {
 				mintrackeddist = d2;
 				who = i;
 				matched = true;
-				// vx0=dx;
-				// vy=dy;
 			}
 		}
 
 		if (matched) {
 			// System.out.print("matched blob "+who+ "\n");
-			trackedBlob b = prevtrackedblobs.remove(who);
+			TBlob b = prevtrackedblobs.remove(who);
 			b.linked = true;
 			b.newblob = false;
 			b.presencetime++;
@@ -982,6 +998,9 @@ public class ImageBlobs {
 			b.pcy = b.cy;
 			b.cx = ab.cx;
 			b.cy = ab.cy;
+			b.bx = ab.bx;
+			b.by = ab.by;
+			
 			b.velx = lp2 * b.prevelx + lp1 * (b.cx - b.pcx);// vx;//b.cx -
 															// b.pcx;
 			b.vely = lp2 * b.prevely + lp1 * (b.cy - b.pcy);// vy;//b.cy -
@@ -1015,6 +1034,7 @@ public class ImageBlobs {
 			b.footrighty = ab.footrighty;
 
 			trackedblobs.add(b);
+			trackednumblobs++;
 
 		}
 
@@ -1024,12 +1044,14 @@ public class ImageBlobs {
 	void compareblobsprevblobs() {
 
 		for (int i = 0; i < theblobs.size(); i++) {
-
-			ABlob ab = (theblobs.get(i));
+			ABlob ab = theblobs.get(i);
 			boolean matched = matchblobprevtrackedblobs(ab);
-
-			if (!matched)
-				addNewBlob(new trackedBlob(ab));
+			if (!matched) {	
+				TBlob tb = new TBlob(ab);
+				trackedblobs.add(tb);
+				trackednumblobs++;
+//				addNewBlob(new TBlob(ab));
+			}
 
 		}
 
@@ -1039,21 +1061,26 @@ public class ImageBlobs {
 
 		for (int i = prevtrackedblobs.size() - 1; i >= 0; i--) {
 
-			trackedBlob tb = prevtrackedblobs.get(i);
+			TBlob tb = prevtrackedblobs.get(i);
 
 			if (tb.linked)
 				System.out.print("flob: a linked blob in doremove error." + i
 						+ " \n");
 			else {
 				// check life
-				if (tb.lifetime-- < 0)
+				if (tb.lifetime-- <= 0)
 					prevtrackedblobs.remove(i);
 				else {
 					// addNewBlob(prevtrackedblobs.remove(i));
-					trackedBlob b = prevtrackedblobs.remove(i);
+					//inactive TBlob
+					TBlob b = prevtrackedblobs.remove(i);
 					b.velx = 0.f;
 					b.vely = 0.f;
-					addTrackedBlob(b);
+					b.presencetime++;
+//					addTrackedBlob(b);
+					trackedblobs.add(b);
+					trackednumblobs++;
+					
 				}
 			}
 		}
@@ -1062,7 +1089,7 @@ public class ImageBlobs {
 
 	void doaddnewtrackedblobs() {
 		for (int i = 0; i < prevtrackedblobs.size(); i++) {
-			trackedBlob newtb = prevtrackedblobs.get(i);// new
+			TBlob newtb = prevtrackedblobs.get(i);// new
 														// trackedBlob((prevblobs.get(i)));
 			newtb.birthtime = System.currentTimeMillis();
 			newtb.presencetime = 0;
@@ -1072,26 +1099,26 @@ public class ImageBlobs {
 		}
 	}
 
-	void add_tracker_match(ABlob b, trackedBlob prev) {
-
-		//
-		trackedBlob tb = new trackedBlob(b, prev);
-		tb.prevelx = prev.velx;
-		tb.prevely = prev.vely;
-		tb.pcx = prev.cx;
-		tb.pcy = prev.cy;
-		tb.velx = tb.cx - prev.cx;
-		tb.vely = tb.cy - prev.cy;
-		tb.presencetime++;
-
-		/*
-		 * b.id = prev.id; b.pcx = prev.cx; b.pcy = prev.cy; b.cx = b.cx; b.cy =
-		 * b.cy; b.prevelx = prev.velx; b.prevely = prev.vely; b.velx = b.cx -
-		 * prev.cx; b.vely = b.cy - prev.cy; b.presencetime++; // add
-		 */
-
-		trackedblobs.add(tb);
-	}
+//	void add_tracker_match(ABlob b, TBlob prev) {
+//
+//		//
+//		TBlob tb = new TBlob(b, prev);
+//		tb.prevelx = prev.velx;
+//		tb.prevely = prev.vely;
+//		tb.pcx = prev.cx;
+//		tb.pcy = prev.cy;
+//		tb.velx = tb.cx - prev.cx;
+//		tb.vely = tb.cy - prev.cy;
+//		tb.presencetime++;
+//
+//		/*
+//		 * b.id = prev.id; b.pcx = prev.cx; b.pcy = prev.cy; b.cx = b.cx; b.cy =
+//		 * b.cy; b.prevelx = prev.velx; b.prevely = prev.vely; b.velx = b.cx -
+//		 * prev.cx; b.vely = b.cy - prev.cy; b.presencetime++; // add
+//		 */
+//
+//		trackedblobs.add(tb);
+//	}
 
 	public boolean isCollide(int x, int y) {
 
@@ -1129,7 +1156,7 @@ public class ImageBlobs {
 
 			for (int i = 0; i < trackedblobs.size(); i++) {
 				// ABlob b = (ABlob) theblobs.get(i);
-				trackedBlob b = trackedblobs.get(i);
+				TBlob b = trackedblobs.get(i);
 
 				// 0. close point on blob
 				float closex = (x < b.boxminx) ? b.boxminx
@@ -1190,7 +1217,7 @@ public class ImageBlobs {
 
 			for (int i = 0; i < trackedblobs.size(); i++) {
 				// ABlob b = (ABlob) theblobs.get(i);
-				trackedBlob b = trackedblobs.get(i);
+				TBlob b = trackedblobs.get(i);
 
 				// 0. close point on blob
 				float closex = (x < b.boxminx) ? b.boxminx

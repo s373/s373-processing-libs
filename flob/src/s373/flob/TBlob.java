@@ -22,36 +22,37 @@
  */
 package s373.flob;
 
+
 /**
- * ABlob extends baseBlob data struct.
- * 
- * ABlob holds info and normalized info for a simple blob.
- * now also has raw integer vel calculations (not tracked blob,
- * so not reliable, but fast).
- * 
- */
-public class ABlob extends baseBlob {
-	public int boxdimx, boxdimy;
-	public int pboxcenterx, pboxcentery;
-	public int ivelx,ively;
-	// world values
-	public float cx, cy;
-	public float bx, by;
-	public float dimx, dimy;
+* 
+* trackedBlob is now TBlob.TBlob extends ABlob. 
+* Has more internal variables like vel, id, birthtime,...
+* Provides better id tracking & vel calculations.
+* 
+*/
+public class TBlob extends ABlob{
+	public boolean newblob=false;
+	public long birthtime;
+	public long lifetime=Flob.TBlobLifeTime;
+	public int presencetime;
+	public boolean linked=false;
 
-	/// features:
-	public float armleftx, armlefty, armrightx, armrighty, headx, heady,
-			bottomx, bottomy, footleftx, footlefty, footrightx, footrighty;
+	public int pboxcenterx,pboxcentery;
+	public float pcx,pcy;
+
+	public float velx,vely;
+	public float prevelx,prevely;
+	public float maxdist2=Flob.TBlobMaxDistSquared;
+	public float rad,rad2;
 
 
-	public ABlob() {
-		boxdimx = boxdimy = ivelx = ively = 0;
-		cx = cy = bx = by = dimx = dimy = 0.0f;
-		pboxcenterx = pboxcentery= -1;
-	}
 
-	public ABlob(ABlob b) {
-		id = b.id;
+	// cast ABlob->TBlob new trackedblob
+	TBlob(ABlob b){	
+		
+		// ABlob cp sans vel
+		
+		id = ImageBlobs.idnumbers++; //b.id;
 		pixelcount = b.pixelcount;
 		boxminx = b.boxminx;
 		boxminy = b.boxminy;
@@ -61,16 +62,11 @@ public class ABlob extends baseBlob {
 		boxcentery = b.boxcentery;
 		boxdimx = b.boxdimx;
 		boxdimy = b.boxdimy;
-		if(b.pboxcenterx==-1){
-			pboxcenterx = boxcenterx;
-			pboxcentery = boxcentery;
-		} else {
-			pboxcenterx = b.pboxcenterx;
-			pboxcentery = b.pboxcentery;
-		}
-		ivelx = boxcenterx - pboxcenterx;
-		ively = boxcentery - pboxcentery;
-
+		pboxcenterx = boxcenterx;
+		pboxcentery = boxcentery;
+//		ivelx = b.ivelx;
+//		ively = b.ively;
+		
 		cx = b.cx;
 		cy = b.cy;
 		bx = b.bx;
@@ -90,5 +86,39 @@ public class ABlob extends baseBlob {
 		footlefty = b.footlefty;
 		footrightx = b.footrightx;
 		footrighty = b.footrighty;
+
+		
+		// TBlob specific
+		
+		newblob=true;
+		birthtime=System.currentTimeMillis();
+		lifetime = Flob.TBlobLifeTime;
+		presencetime = 1;
+		linked=false;
+
+		pcx = cx;
+		pcy = cy;
+		prevelx=prevely=velx=vely=0.0f;
+		maxdist2=Flob.TBlobMaxDistSquared;//2555f;//1000;//~31px//100;
+		calcrad();
+	
+	}
+
+	void calcrad(){
+		rad = (boxdimx<boxdimy)?boxdimx/2f:boxdimy/2f;
+		rad2 = rad*rad;
 	}
 }
+
+
+//backwards compatability not so good with java
+//typedef trackedBlob TBlob;
+//
+//package s373.flob;
+//
+//public class trackedBlob extends TBlob {
+//
+//	trackedBlob(ABlob ab){
+//		super(ab);
+//	}
+//}

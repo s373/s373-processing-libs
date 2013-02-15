@@ -37,7 +37,7 @@ void setup(){
   flob.setOm(om);  
   flob.setThresh(tresh);
   flob.setSrcImage(videotex);
-  flob.settrackedBlobLifeTime(5);  
+  flob.setTBlobLifeTime(10);//10frames  
   textFont(font);
 }
 
@@ -57,7 +57,7 @@ void draw(){
   rectMode(CENTER);
 
   for(int i = 0; i < blobs.size(); i++) {
-    trackedBlob tb = flob.getTrackedBlob(i);
+    TBlob tb = flob.getTBlob(i);
    
     String txt = "id: "+tb.id+" time: "+tb.presencetime+" ";
     float velmult = 100.0f;
