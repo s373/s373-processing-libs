@@ -1,8 +1,8 @@
 /*
-  sonics373Monoflob
+  sonicMonoflob
   (vs. 20101220)
   
-  sonic version of s373Monoflob, here a polyphonic 49 voice synth (7x7 s373Monoflob)
+  sonic version of s373Monoflob, here a polyphonic 49 voice synth (7x7 grid)
   where each button has a sine wave you can fade or turn on/off (b)
   
   André Sier 

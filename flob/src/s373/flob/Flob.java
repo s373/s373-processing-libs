@@ -47,44 +47,20 @@ import processing.core.PImage;
 
 
 /**           
- * Flob           <br/>
- * Fast multi-blob detector and simple skeleton tracker using flood-fill algorithms.           <br/>
- * http://s373.net/code/flob           <br/>
- *	 * Flob is a continuous frame differencing algorithm using flood fill procedures to calculate blobs.           <br/>
-	 * basic process is comparing incoming image to a background image.           <br/>
-	 * there are two main operating modes @om (flob.setOm()):           <br/>
-	 * 	-STATIC_DIFFERENCE (0)           <br/>
-	 * 		incoming image is compared to background. background is unchanged.           <br/>
-	 * 	-CONTINUOUS_DIFFERENCE (1)           <br/>
-	 * 		incoming image is compared to background. background is set to previous frame.           <br/>
-	 * 	-CONTINUOUS_EASE_DIFFERENCE (2)           <br/>
-	 * 		incoming image is compared to background. previous frame eased onto background pixels.           <br/>
-	 *            <br/>
-	 * Flob receives an ARGB Processing PImage as input and converts            <br/>
-	 * rgb->luma (luminance, greyscale image) using one of several            <br/>
-	 * methods specified through @colormode.           <br/>
-	 * first the image is mirrored if specified through @mirrorX @mirrorY           <br/>
-	 * then the image is converted from argb->luma using @colormode           <br/>
-	 * possible @colormode values:           <br/>
-	 * @RED           
-	 * @GREEN         
-	 * @BLUE          
-	 * @LUMA601       
-	 * @LUMA609       
-	 * @LUMAUSER      
-	 *            
-	 * the greyscale luminance image is then binarized using the            <br/>
-	 * @videothresh value as reference.           <br/>
-	 * <br/>
-	 * to calculate the binary image, now Flob takes @thresholdmode            <br/>
-	 * to specify the operation to calculate the binary image.            <br/>
-	 * possible values include:           <br/>
-	 * 	- @ABS : absolute diference of incoming pixel versus background           <br/>
-	 * 	- @LESSER : if incoming pixel less than threshold, mark as white pixel in binary image           <br/>
-	 * 	- @GREATER : white if above @videothresh value           <br/>
-           <br/>
-           <br/>
- *           <br/>
+ * 
+ * Fast multi-blob detector and simple skeleton tracker using flood-fill algorithms. http://s373.net/code/flob
+ * Flob is a continuous frame differencing algorithm using flood fill procedures to calculate blobs.
+ * Basic process is comparing incoming image to a background image. There are two main operating modes @om (flob.setOm()): 
+ * -STATIC_DIFFERENCE (0) incoming image is compared to background. background is unchanged. 
+ * -CONTINUOUS_DIFFERENCE (1) incoming image is compared to background. background is set to previous frame.
+ * -CONTINUOUS_EASE_DIFFERENCE (2) incoming image is compared to background. previous frame eased onto background pixels.
+ * Flob receives an ARGB Processing PImage as input and converts rgb->luma (luminance, greyscale image) using one of several methods specified through @colormode.
+ * The greyscale luminance image is then binarized (flob.binarize(Image)) using the @videothresh or @videothreshf value as reference.
+ * First the image is mirrored if specified through @mirrorX @mirrorY then the image is converted from argb->luma using @colormode possible @colormode values: @RED @GREEN @BLUE @LUMA601 @LUMA609 @LUMAUSER
+ * In openFrameworks, it's a similar procedure, you pass an image pixels array, and call the binarize method.
+ * To calculate the binary image, now Flob takes @thresholdmode to specify the operation to calculate the binary image. possible values include: - @ABS : absolute diference of incoming pixel versus background - @LESSER : if incoming pixel less than threshold, mark as white pixel in binary image - @GREATER : white if above @videothresh value
+ * You can also clamp the internal image (@clampGray) to focus on @nearGray and @farGray interval values. Usefull for kinect like clamping.
+ *
  */           
 public class Flob {
 
@@ -152,9 +128,14 @@ public class Flob {
 
 	public static int TBlobLifeTime = 5; // 60
 	public static float TBlobMaxDistSquared = 2555f;
-	public boolean trackedBlobDoSorting = false;
+	public boolean TBlobDoSorting = false;
 
-	public static String VERSION = "flob 0.2.3z - built ";
+	public boolean clampGray = false; // kinect clamping
+	public int	nearGray = 0;
+	public int	farGray = 255;
+	
+	
+	public static String VERSION = "flob 0.2.4a - built ";
 
 
 	/**
@@ -256,7 +237,9 @@ public class Flob {
 	 * thanks Eduardo Pinto & Fausto Fonseca for feedback 
 	 * during osomdopensamento.wordpress.com @ fbaul, 2009
 	 * 
-	 * thanks Mahesh Viswanathan for feedback, feb 2013
+	 * thanks Mahesh Viswanathan for feedback, feb 2013.
+	 * 
+	 * updated in 0024a to accomodate kinect clamping.
 	 * 
 	 * Flob receives an ARGB Processing PImage as input and converts 
 	 * rgb->luma (luminance, greyscale image) using one of several 
@@ -267,29 +250,9 @@ public class Flob {
 	 * receives argb PImages @video; 
 	 * fastblurs' the Image using Mario Klingemann fast blur 1.1 code according to @blur parameter;
 	 * mirrors if @mirrorX / @mirrorY activated;
-	 * converts argb->luma derived from @colormode;
+	 * converts argb->luma derived from @colormode and from @clampGray values;
 	 * compares luma image to @videothresh value according do @thresholdmode; 
 	 * returns binary output image;
-	 * 
-	 * 
-	 * 
-	 * 
-	 * 
-	 * 
-	 * old comment left
-	 * 
-	 * first pass of the flob engine.<br>
-	 * revised in version 001l to allow different color channel tracking.<br>
-	 * transforms the input image in a black and white only image (binary
-	 * image).<br>
-	 * optionally insert a fastblur in the image. (if setBlur > 0, blur has that
-	 * radius)<br>
-	 * // nice fastblur insertion, thanks to fausto fonseca for showing the
-	 * code, and to eduardo pinto for teasing me about it. it's fast and great! <br>
-	 * // fast blur code by Mario Klingemann <http://incubator.quasimondo.com><br>
-	 * returns a binary image suitable for the calc engine.<br>
-	 * <br>
-	 * built in fastblur filter if blurRadius > 0. <br>
 	 * 
 	 * @param PImage
 	 * @return PImage
@@ -318,7 +281,6 @@ public class Flob {
 							+ (videoresh - j - 1) * videoresw];
 				}
 			}
-			videoimg.updatePixels();
 
 		} else if (mirrorX && !mirrorY) {
 			int[] scanline = new int[videoresw]; // one hscanline
@@ -329,7 +291,6 @@ public class Flob {
 					videoimg.pixels[j * videoresw + i] = scanline[i];
 				}
 			}
-			videoimg.updatePixels();
 
 		} else if (!mirrorX && mirrorY) {
 			// working ok since 001j
@@ -343,14 +304,12 @@ public class Flob {
 				}
 			}
 
-			videoimg.updatePixels();
 		}
 
 		
-		
+		videoimg.updatePixels();
 		
 		// begin processing input image to binary image 
-		
 		presence = 0;
 //		videoimg.loadPixels();
 
@@ -418,6 +377,11 @@ public class Flob {
 		
 					}
 
+			if(clampGray){
+				currentVal = currentVal < nearGray ? nearGray : currentVal > farGray ? farGray : currentVal; 
+				backgroundVal = backgroundVal < nearGray ? nearGray : backgroundVal > farGray ? farGray : backgroundVal; 
+			}
+			
 			int binarize = 0;
 
 			if(fm){
@@ -570,8 +534,8 @@ public class Flob {
 			videoteximgmotion.updatePixels();
 		}
 
-		if(videotexmode!=pvideotexmode){// && videotexchange ) {
-			pvideotexmode = videotexmode;
+		if(true){//videotexmode!=pvideotexmode){// && videotexchange ) {
+//			pvideotexmode = videotexmode;
 			switch (videotexmode) {
 			default:
 			case 0:
@@ -756,8 +720,9 @@ public class Flob {
 	 * @param thresholdmode
 	 * 
 	 */
-	public void setThresholdmode(int thresholdmode) {
+	public Flob setThresholdmode(int thresholdmode) {
 		this.thresholdmode = thresholdmode;
+		return this;
 	}
 
 	/**
@@ -1100,15 +1065,64 @@ public class Flob {
 	/**
 	 * @return the trackedBlobDoSorting
 	 */
-	public boolean isTrackedBlobDoSorting() {
-		return trackedBlobDoSorting;
+	public boolean isTBlobDoSorting() {
+		return TBlobDoSorting;
 	}
 
 	/**
 	 * @param trackedBlobDoSorting the trackedBlobDoSorting to set
 	 */
-	public void setTrackedBlobDoSorting(boolean trackedBlobDoSorting) {
-		this.trackedBlobDoSorting = trackedBlobDoSorting;
+	public Flob setTBlobDoSorting(boolean trackedBlobDoSorting) {
+		this.TBlobDoSorting = trackedBlobDoSorting;
+		return this;
+	}
+
+	/**
+	 * @return the clampGray
+	 */
+	public boolean isClampGray() {
+		return clampGray;
+	}
+
+	/**
+	 * new kinect specific code can clamp kinect image (or other rgbimages)
+     * between values of nearGray and farGray (works on 8bit 0-255 limits)
+     * 
+	 * @param clampGray the clampGray to set
+	 */
+	public Flob setClampGray(boolean clampGray) {
+		this.clampGray = clampGray;
+		return this;
+	}
+
+	/**
+	 * @return the nearGray
+	 */
+	public int getNearGray() {
+		return nearGray;
+	}
+
+	/**
+	 * @param nearGray the nearGray to set
+	 */
+	public Flob setNearGray(int nearGray) {
+		this.nearGray = nearGray;
+		return this;
+	}
+
+	/**
+	 * @return the farGray
+	 */
+	public int getFarGray() {
+		return farGray;
+	}
+
+	/**
+	 * @param farGray the farGray to set
+	 */
+	public Flob setFarGray(int farGray) {
+		this.farGray = farGray;
+		return this;
 	}
 
 	/**
@@ -1203,13 +1217,13 @@ public class Flob {
 		return imageblobs.trackedblobs.get(i);
 
 	}
+
 	/**
 	 * getPreviousTrackedBlob returns the nth tracked previous blob of the
-	 * tracker<br>
+	 * tracker.
 	 * returns one trackedBlob element<br>
 	 * <br>
 	 */
-
 	public TBlob getPreviousTrackedBlob(int i) {
 
 		TBlob tb = imageblobs.prevtrackedblobs.get(i);
@@ -1299,24 +1313,6 @@ public class Flob {
 
 	// calcsimpleAL
 
-	public float[] getTrackedSimpleBlob(int i) {
-		float data[] = new float[12];
-		TBlob tb = imageblobs.trackedblobs.get(i);
-		data[0] = tb.id;
-		data[1] = tb.cx * worldwidth;
-		data[2] = tb.cy * worldheight;
-		data[3] = tb.velx * worldwidth;
-		data[4] = tb.vely * worldheight;
-		data[5] = tb.prevelx * worldwidth;
-		data[6] = tb.prevely * worldheight;
-		data[7] = tb.presencetime;
-		data[8] = tb.dimx * worldwidth;
-		data[9] = tb.dimy * worldheight;
-		data[10] = tb.rad * worldwidth;
-		data[11] = tb.birthtime;
-
-		return data;
-	}
 
 	/**
 	 * getNumBlobs. should be called after calc.
@@ -1336,38 +1332,11 @@ public class Flob {
 		return imageblobs.trackedblobs.size();
 	}
 
-//	public int getNumTrackedSimpleBlobs() {
-//		return imageblobs.tbsimplelist.size();
-//	}
 
 	public int getNumQuadBlobs() {
 		return imageblobs.quadblobslist.size();
 	}
 
-	/**
-	 * getTrackedBlobf returns the data of the nth tracked blob of the tracker
-	 * as float[] returns the arraylist of trackedBlob elements
-	 * 
-	 * @return float[12]
-	 */
-
-	public float[] getTrackedBlobf(int i) {
-		float data[] = new float[12];
-		TBlob tb = imageblobs.trackedblobs.get(i);
-		data[0] = tb.id;
-		data[1] = tb.cx * worldwidth;
-		data[2] = tb.cy * worldheight;
-		data[3] = tb.velx * worldwidth;
-		data[4] = tb.vely * worldheight;
-		data[5] = tb.prevelx * worldwidth;
-		data[6] = tb.prevely * worldheight;
-		data[7] = tb.presencetime;
-		data[8] = tb.dimx * worldwidth;
-		data[9] = tb.dimy * worldheight;
-		data[10] = tb.rad * worldwidth;
-		data[11] = tb.birthtime;
-		return data;
-	}
 
 	/**
 	 * getPresence. returns the number of active pixels
@@ -1388,131 +1357,6 @@ public class Flob {
 //		return ((float) presence / (float) numPixels);
 	}
 
-	/**
-	 * getCentroids. returns all coordinates as normalized floats
-	 * 
-	 * @return float[]
-	 */
-	public float[] getCentroids() {
-		int numblobs = imageblobs.theblobs.size();
-		float centroids[] = new float[2 * numblobs];
-		for (int i = 0; i < numblobs; i++) {
-			ABlob blob = imageblobs.theblobs.get(i);
-			centroids[i * 2 + 0] = blob.cx * worldwidth;
-			centroids[i * 2 + 1] = blob.cy * worldheight;
-		}
-		return centroids;
-	}
-
-	public float[] getPreviousCentroids() {
-		int numblobs = imageblobs.prevblobs.size();
-		float centroids[] = new float[2 * numblobs];
-		for (int i = 0; i < numblobs; i++) {
-			ABlob blob = imageblobs.prevblobs.get(i);
-			centroids[i * 2 + 0] = blob.cx * worldwidth;
-			centroids[i * 2 + 1] = blob.cy * worldheight;
-		}
-		return centroids;
-	}
-
-	/**
-	 * getCentroid int i. returns coordinates of this centroid as float[2]
-	 * 
-	 * @return float[]
-	 */
-
-	public float[] getCentroid(int i) {
-		float centroid[] = new float[2];
-		ABlob blob = imageblobs.theblobs.get(i);
-		centroid[0] = blob.cx;// * (float)worldwidth; //already passed
-		centroid[1] = blob.cy;// * (float)worldheight;
-		return centroid;
-	}
-
-	/**
-	 * getCentroidPixelcount int i. returns coordinates of this centroid +
-	 * pixelcount as float[3]
-	 * 
-	 * @return float[]
-	 */
-
-	public float[] getCentroidPixelcount(int i) {
-		float centroid[] = new float[3];
-		ABlob blob = imageblobs.theblobs.get(i);
-		centroid[0] = blob.cx;// * (float)worldwidth;
-		centroid[1] = blob.cy;// * (float)worldheight;
-		centroid[2] = blob.pixelcount;
-		return centroid;
-	}
-
-	/**
-	 * getPreviousCurrentCentroid int i. returns previous and current
-	 * coordinates of this centroid as normalized float[4]
-	 * 
-	 * @return float[]
-	 */
-
-	public float[] getPreviousCurrentCentroid(int i) {
-		float centroid[] = new float[4];
-		ABlob blob = imageblobs.theblobs.get(i);
-		centroid[0] = blob.cx;// * worldwidth;
-		centroid[1] = blob.cy;// * worldheight;
-		return centroid;
-	}
-
-	/**
-	 * getPreviousCurrentCentroidMass int i. returns previous and current
-	 * coordinates of this centroid as normalized float[4]
-	 * 
-	 * @return float[]
-	 */
-
-	public float[] getPreviousCurrentCentroidMass(int i) {
-		float centroid[] = new float[5];
-		ABlob blob = imageblobs.theblobs.get(i);
-		centroid[0] = blob.cx;// * worldwidth;
-		centroid[1] = blob.cy;// * worldheight;
-		centroid[4] = blob.pixelcount;
-		return centroid;
-	}
-
-	/**
-	 * getDim int i. returns dimensions of the bounding box of this centroid as
-	 * normalized float[2]
-	 * 
-	 * @return float[]
-	 */
-
-	public float[] getDim(int i) {
-		float centroid[] = new float[2];
-		ABlob blob = imageblobs.theblobs.get(i);
-		centroid[0] = blob.dimx;// * worldwidth;
-		centroid[1] = blob.dimy;// * worldheight;
-		return centroid;
-	}
-
-	/**
-	 * getBox int i. returns coordinates of this centroid's box as int[4] box
-	 * min x + box min y + box max x + box max y
-	 * 
-	 * 
-	 * 
-	 * @return int[]
-	 */
-
-	public int[] getBox(int i) {
-
-		int box[] = new int[4];
-
-		ABlob blob = imageblobs.theblobs.get(i);
-		box[0] = blob.boxminx;// boxcenterx;
-		box[1] = blob.boxminy;// boxcentery;
-		box[2] = blob.boxmaxx;// - blob.boxminx;
-		box[3] = blob.boxmaxy;// - blob.boxminy;
-
-		return box;
-
-	}
 
 	/**
 	 * testPos int x, int y. tests a point coords x + y in the image map returns

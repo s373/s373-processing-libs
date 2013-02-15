@@ -46,7 +46,6 @@ public class ImageBlobs {
 	public float wr, hr;
 	public float wcoordsx, wcoordsy, w2, h2;
 	public float worldwidth = 700, worldheight = 700;
-	//public boolean coordsmode;
 	public int numpix;
 	public float lp1 = 0.05f;
 	public float lp2 = 1.0f - lp1;
@@ -55,7 +54,6 @@ public class ImageBlobs {
 	public ArrayList<ABlob> prevblobs = null;
 	public ArrayList<TBlob> trackedblobs = null;
 	public ArrayList<TBlob> prevtrackedblobs = null;
-//	public ArrayList<TBlob> tbsimplelist = null;
 	public ArrayList<quadBlob> quadblobslist = null;
 	public ArrayList<pt2> thecoords = null;
 	private Flob tflob;
@@ -75,20 +73,16 @@ public class ImageBlobs {
 		theblobs = new ArrayList<ABlob>();
 		prevblobs = new ArrayList<ABlob>();
 		thecoords = new ArrayList<pt2>();
-//		tbsimplelist = new ArrayList<TBlob>();
 		quadblobslist = new ArrayList<quadBlob>();
 		numblobs = prevnumblobs = 0;
 		trackednumblobs = prevtrackednumblobs = 0;
 		calcdims(tflob.videoresw, tflob.videoresh, tflob.worldwidth,
 				tflob.worldheight);
-		//coordsmode = tflob.coordsmode;
 	}
 
 	void calcdims(int w, int h, float ww, float wh) {
 		this.w = w;
 		this.h = h;
-		// w2 = w / 2;
-		// h2 = h / 2;
 		wr = 1.0f / w;
 		hr = 1.0f / h;
 		numpix = w * h;
@@ -113,22 +107,11 @@ public class ImageBlobs {
 		lp2 = 1.0f - lp1;
 	}
 
-	ArrayList<ABlob> getblobsAL() {
-		return theblobs;
-	}
 
-//	void query() {
-//		System.out.print("query blobdata\n");
-//		System.out.print("numblobs " + numblobs + "\n");
-//		for (int i = 0; i < theblobs.size(); i++) {
-//			ABlob b = theblobs.get(i);
-//			System.out.print("blob" + b.id + " pix" + b.pixelcount + " coords "
-//					+ b.boxminx + " " + b.boxminy + " " + b.boxmaxx + " "
-//					+ b.boxmaxy + "  center " + b.boxcenterx + " "
-//					+ b.boxcentery + "\n");
-//		}
-//	}
-
+	
+	
+	
+	
 	void calc(PImage pimage) {
 		int min0 = 1000000;
 		int max0 = -100;
@@ -139,10 +122,7 @@ public class ImageBlobs {
 		copy_blobs_to_previousblobs();
 		int prevblobssize = prevblobs.size();
 		thecoords.clear();
-		// if (w != pimage.width) {
-		// calcdims(pimage.width, pimage.height, tflob.worldwidth,
-		// tflob.worldheight);
-		// }
+
 		imagemap = new boolean[numpix];
 		pimage.loadPixels();
 		for (int j = 0; j < pimage.height; j++) {
@@ -207,8 +187,8 @@ public class ImageBlobs {
 							b.cy = b.boxcentery * wcoordsy;
 							b.bx = b.boxminx * wcoordsx;
 							b.by = b.boxminy * wcoordsy;
-							b.dimx = b.boxdimx*wcoordsx;//((b.boxmaxx - b.boxminx) * wcoordsx);
-							b.dimy = b.boxdimy*wcoordsy;//((b.boxmaxy - b.boxminy) * wcoordsy);
+							b.dimx = b.boxdimx*wcoordsx;
+							b.dimy = b.boxdimy*wcoordsy;
 							if(b.id < prevblobssize){
 								ABlob pb = prevblobs.get(b.id);
 								b.pboxcenterx = pb.boxcenterx;
@@ -819,10 +799,10 @@ public class ImageBlobs {
 			}
 			b1.cx = ab.cx;
 			b1.cy = ab.cy;
-			b1.velx = lp2 * b1.prevelx + lp1 * (b1.cx - b1.pcx);// vx;//b.cx -
-																// b.pcx;
-			b1.vely = lp2 * b1.prevely + lp1 * (b1.cy - b1.pcy);// vy;//b.cy -
-																// b.pcy;
+			b1.velx = lp2 * b1.prevelx + lp1 * (b1.cx - b1.pcx);
+																
+			b1.vely = lp2 * b1.prevely + lp1 * (b1.cy - b1.pcy);
+																
 			b1.boxminx = ab.boxminx;
 			b1.boxmaxx = ab.boxmaxx;
 			b1.boxminy = ab.boxminy;
@@ -858,29 +838,6 @@ public class ImageBlobs {
 
 	}
 
-	// void
-
-	// /// tracking code
-
-//	void addTrackedBlob(TBlob b) {
-//		// b.id = b.id;//idnumbers++;
-//		// b.birthtime=System.currentTimeMillis();
-//		// b.presencetime=0;
-//		b.presencetime++;
-//		trackednumblobs++;
-//		trackedblobs.add(b);
-//	}
-
-//	void addNewBlob(TBlob b) {
-//
-////		// inside TBlob
-////		b.id = idnumbers++;
-////		b.birthtime = System.currentTimeMillis();
-////		b.presencetime = 0;
-//		// add new box to it
-//		trackednumblobs++;
-//		trackedblobs.add(b);
-//	}
 
 	/**
 	 * void dotracking()<br>
@@ -903,11 +860,10 @@ public class ImageBlobs {
 		prevtrackedblobs.clear();
 		for (int i = 0; i < trackedblobs.size(); i++) {
 			TBlob tb = trackedblobs.get(i);
-			// tb.presencetime++;
+			// tb.presencetime++;//gets added on trackedblobs list
 			prevtrackedblobs.add(tb);
 		}
 
-		// new arraylist of trackedblobs
 		trackedblobs.clear();
 
 		// always init tracking, unlink all blobs
@@ -921,7 +877,7 @@ public class ImageBlobs {
 		// always
 		doremoveprevblobs();
 
-		if(tflob.trackedBlobDoSorting){
+		if(tflob.TBlobDoSorting){
 			sorttrackedblobs();
 		}
 		
@@ -939,7 +895,7 @@ public class ImageBlobs {
 		if (trackedblobs.size() > 0) {
 
 			for (int i = trackedblobs.size() - 1; i >= 0; i--) {
-				int minid2 = (int) 2e63 - 1;// Math.MA100000000;
+				int minid2 = (int) 2e63 - 1;
 				int who = -1;
 				for (int j = 0; j < trackedblobs.size(); j++) {
 					TBlob tb = trackedblobs.get(i);
@@ -966,16 +922,12 @@ public class ImageBlobs {
 		boolean matched = false;
 		float mintrackeddist = 1000000;
 		int who = -1;
-		float mindist = trackingmindist;// 1000;///2500;//1000; //
-		// float vx0=0f;
-		// float vy=0f;
+		float mindist = trackingmindist;
 
 		for (int i = prevtrackedblobs.size() - 1; i >= 0; i--) {
-
 			TBlob prev = prevtrackedblobs.get(i);
 			if (prev.linked)
 				continue;
-
 			float dx = ab.cx - prev.cx;
 			float dy = ab.cy - prev.cy;
 			float d2 = dx * dx + dy * dy;
@@ -1001,10 +953,10 @@ public class ImageBlobs {
 			b.bx = ab.bx;
 			b.by = ab.by;
 			
-			b.velx = lp2 * b.prevelx + lp1 * (b.cx - b.pcx);// vx;//b.cx -
-															// b.pcx;
-			b.vely = lp2 * b.prevely + lp1 * (b.cy - b.pcy);// vy;//b.cy -
-															// b.pcy;
+			b.velx = lp2 * b.prevelx + lp1 * (b.cx - b.pcx);
+															
+			b.vely = lp2 * b.prevely + lp1 * (b.cy - b.pcy);
+															
 			// box
 			b.boxminx = ab.boxminx;
 			b.boxmaxx = ab.boxmaxx;
@@ -1050,7 +1002,6 @@ public class ImageBlobs {
 				TBlob tb = new TBlob(ab);
 				trackedblobs.add(tb);
 				trackednumblobs++;
-//				addNewBlob(new TBlob(ab));
 			}
 
 		}
@@ -1060,24 +1011,20 @@ public class ImageBlobs {
 	void doremoveprevblobs() {
 
 		for (int i = prevtrackedblobs.size() - 1; i >= 0; i--) {
-
 			TBlob tb = prevtrackedblobs.get(i);
-
-			if (tb.linked)
+			if (tb.linked) {
 				System.out.print("flob: a linked blob in doremove error." + i
 						+ " \n");
-			else {
+			} else {
 				// check life
 				if (tb.lifetime-- <= 0)
 					prevtrackedblobs.remove(i);
 				else {
-					// addNewBlob(prevtrackedblobs.remove(i));
 					//inactive TBlob
 					TBlob b = prevtrackedblobs.remove(i);
 					b.velx = 0.f;
 					b.vely = 0.f;
 					b.presencetime++;
-//					addTrackedBlob(b);
 					trackedblobs.add(b);
 					trackednumblobs++;
 					
@@ -1087,38 +1034,7 @@ public class ImageBlobs {
 
 	}
 
-	void doaddnewtrackedblobs() {
-		for (int i = 0; i < prevtrackedblobs.size(); i++) {
-			TBlob newtb = prevtrackedblobs.get(i);// new
-														// trackedBlob((prevblobs.get(i)));
-			newtb.birthtime = System.currentTimeMillis();
-			newtb.presencetime = 0;
-			trackednumblobs++;
-			trackedblobs.add(newtb);
 
-		}
-	}
-
-//	void add_tracker_match(ABlob b, TBlob prev) {
-//
-//		//
-//		TBlob tb = new TBlob(b, prev);
-//		tb.prevelx = prev.velx;
-//		tb.prevely = prev.vely;
-//		tb.pcx = prev.cx;
-//		tb.pcy = prev.cy;
-//		tb.velx = tb.cx - prev.cx;
-//		tb.vely = tb.cy - prev.cy;
-//		tb.presencetime++;
-//
-//		/*
-//		 * b.id = prev.id; b.pcx = prev.cx; b.pcy = prev.cy; b.cx = b.cx; b.cy =
-//		 * b.cy; b.prevelx = prev.velx; b.prevely = prev.vely; b.velx = b.cx -
-//		 * prev.cx; b.vely = b.cy - prev.cy; b.presencetime++; // add
-//		 */
-//
-//		trackedblobs.add(tb);
-//	}
 
 	public boolean isCollide(int x, int y) {
 
@@ -1159,10 +1075,8 @@ public class ImageBlobs {
 				TBlob b = trackedblobs.get(i);
 
 				// 0. close point on blob
-				float closex = (x < b.boxminx) ? b.boxminx
-						: ((x > b.boxmaxx) ? b.boxmaxx : x);
-				float closey = (y < b.boxminy) ? b.boxminy
-						: ((y > b.boxmaxy) ? b.boxmaxy : y);
+				float closex = (x < b.boxminx) ? b.boxminx : ((x > b.boxmaxx) ? b.boxmaxx : x);
+				float closey = (y < b.boxminy) ? b.boxminy : ((y > b.boxmaxy) ? b.boxmaxy : y);
 
 				// 1. dist blob close
 				float dx0 = closex - x;
@@ -1215,21 +1129,20 @@ public class ImageBlobs {
 
 		if (x >= 0f && x < w && y >= 0f && y < h) {
 
-			for (int i = 0; i < trackedblobs.size(); i++) {
-				// ABlob b = (ABlob) theblobs.get(i);
-				TBlob b = trackedblobs.get(i);
+			for (int i = 0; i < theblobs.size(); i++) {
+				ABlob b = (ABlob) theblobs.get(i);
+				//TBlob b = trackedblobs.get(i);
 
 				// 0. close point on blob
-				float closex = (x < b.boxminx) ? b.boxminx
-						: ((x > b.boxmaxx) ? b.boxmaxx : x);
-				float closey = (y < b.boxminy) ? b.boxminy
-						: ((y > b.boxmaxy) ? b.boxmaxy : y);
+				float closex = (x < b.boxminx) ? b.boxminx : ((x > b.boxmaxx) ? b.boxmaxx : x);
+				float closey = (y < b.boxminy) ? b.boxminy : ((y > b.boxmaxy) ? b.boxmaxy : y);
 
 				// 1. dist blob close
 				float dx0 = closex - x;
 				float dy0 = closey - y;
 				float d0 = dx0 * dx0 + dy0 * dy0;
-				float minsdist = rad * rad + b.rad2;
+				float brad2 = b.dimx>b.dimy? b.dimx*b.dimx : b.dimy*b.dimy;
+				float minsdist = rad * rad + brad2;
 				if (d0 < minsdist && imagemap[(int) (y * w + x)]) {
 					// compute normalized vector from close to center
 					float nvx = b.boxcenterx - closex;
@@ -1250,8 +1163,8 @@ public class ImageBlobs {
 					dcol[0] = 1f;
 					dcol[1] = nvx * wr;
 					dcol[2] = nvy * hr;
-					dcol[3] = b.velx * wr;
-					dcol[4] = b.vely * hr;
+					dcol[3] = b.ivelx * wr;
+					dcol[4] = b.ively * hr;
 					// break;
 					return dcol;
 

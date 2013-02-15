@@ -94,7 +94,7 @@ void draw(){
   stroke(255,200);
   //get and use the data
   // int numblobs = flob.getNumBlobs(); 
-  int numtrackedblobs = flob.getNumTrackedBlobs();
+  int numtrackedblobs = flob.getNumTBlobs();
 
   text("numblobs> "+numtrackedblobs,5,height-10);
 
@@ -102,10 +102,10 @@ void draw(){
   rectMode(CENTER);
   stroke(127,200);
 
-  trackedBlob tb;
+  TBlob tb;
 
   for(int i = 0; i < numtrackedblobs; i++) {
-    tb = flob.getTrackedBlob(i);
+    tb = flob.getTBlob(i);
     rect(tb.cx, tb.cy, tb.dimx, tb.dimy );
     line(tb.cx, tb.cy, tb.cx + tb.velx * velmult ,tb.cy + tb.vely * velmult );    
     String txt = ""+tb.id+" "+tb.cx+" "+tb.cy;

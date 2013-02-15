@@ -40,6 +40,11 @@ void setup() {
 
   flob.setThresh(20).setSrcImage(3).setBackground(vrImage)
     .setBlur(0).setOm(1).setFade(25).setMirror(false, false);
+    
+    // new kinect specific code can clamp kinect image (or other images)
+    // between values of nearGray and farGray (works on 8bit 0-255 limits)
+
+  flob.setClampGray(true).setNearGray(10).setFarGray(80);
 
   rectMode(CENTER);
   textFont(createFont("monospace",16));
