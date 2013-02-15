@@ -22,7 +22,7 @@
  * 
  * @author      Andre Sier 
  * @modified    20130208
- * @version     0.2.3z (23)
+ * @version     0.2.4a (24)
  * @url			http://s373.net/code/flob
  */
 
@@ -60,7 +60,7 @@ import processing.core.PImage;
  * In openFrameworks, it's a similar procedure, you pass an image pixels array, and call the binarize method.
  * To calculate the binary image, now Flob takes @thresholdmode to specify the operation to calculate the binary image. possible values include: - @ABS : absolute diference of incoming pixel versus background - @LESSER : if incoming pixel less than threshold, mark as white pixel in binary image - @GREATER : white if above @videothresh value
  * You can also clamp the internal image (@clampGray) to focus on @nearGray and @farGray interval values. Usefull for kinect like clamping.
- *
+ * Once you have the binary image essential for blob tracking, you can call the methods @flob.calc(PImage binImage), which returns a usable list of @ABlob's, or @flob.track(PImage binImage), @flob.tracksimple, @flob.calcsimple, which return a usable list of @TBlob's.
  */           
 public class Flob {
 

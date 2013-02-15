@@ -193,8 +193,6 @@ public class ImageBlobs {
 								ABlob pb = prevblobs.get(b.id);
 								b.pboxcenterx = pb.boxcenterx;
 								b.pboxcentery = pb.boxcentery;
-//								b.velx = b.boxcenterx-b.pboxcenterx; // inside
-//								b.vely = b.boxcentery-b.pboxcentery;
 							}
 							
 							
@@ -721,20 +719,9 @@ public class ImageBlobs {
 			b1.boxcentery = ab.boxcentery;
 
 			b1.velx += lp2 * b1.velx + lp1 * (b1.boxcenterx - b1.pboxcenterx)
-					* wr;// vx;//b.cx - b.pcx;
+					* wr;
 			b1.vely = lp2 * b1.vely + lp1 * (b1.boxcentery - b1.pboxcentery)
-					* hr;// vy;//b.cy - b.pcy;
-
-			// // old smooth
-			// b1.velx = lp2 * b1.velx + lp1 * (b1.boxcenterx - b1.pboxcenterx)
-			// * wr;// vx;//b.cx - b.pcx;
-			// b1.vely = lp2 * b1.vely + lp1 * (b1.boxcentery - b1.pboxcentery)
-			// * hr;// vy;//b.cy - b.pcy;
-
-			// b1.velx = lp2*b1.prevelx + lp1*(b1.cx - b1.pcx);//vx;//b.cx -
-			// b.pcx;
-			// b1.vely = lp2*b1.prevely + lp1*(b1.cy - b1.pcy);//vy;//b.cy -
-			// b.pcy;
+					* hr;
 			b1.boxminx = ab.boxminx;
 			b1.boxmaxx = ab.boxmaxx;
 			b1.boxminy = ab.boxminy;
@@ -1038,8 +1025,7 @@ public class ImageBlobs {
 
 	public boolean isCollide(int x, int y) {
 
-		// receives a pair, tests inside any box, if inside boxes tests inside
-		// imagemap
+		// receives a pair, tests inside any box, if inside boxes tests inside imagemap
 
 		if (x >= 0 && x < w && y >= 0 && y < h) {
 			for (int i = 0; i < theblobs.size(); i++) {
@@ -1124,13 +1110,12 @@ public class ImageBlobs {
 		x *= w;
 		y *= h;
 		rad *= w;
-		// receives a pair, tests inside any box, if inside boxes tests inside
-		// imagemap
+		// receives a pair, tests inside any box, if inside boxes tests inside imagemap
 
 		if (x >= 0f && x < w && y >= 0f && y < h) {
 
 			for (int i = 0; i < theblobs.size(); i++) {
-				ABlob b = (ABlob) theblobs.get(i);
+				ABlob b =   theblobs.get(i);
 				//TBlob b = trackedblobs.get(i);
 
 				// 0. close point on blob
