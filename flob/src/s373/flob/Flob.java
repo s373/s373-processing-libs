@@ -135,7 +135,7 @@ public class Flob {
 	public int	farGray = 255;
 	
 	
-	public static String VERSION = "flob 0.2.4a - built ";
+	public static String VERSION = "flob 0.2.5b - built ";
 
 
 	/**

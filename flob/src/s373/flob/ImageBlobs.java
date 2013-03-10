@@ -718,7 +718,7 @@ public class ImageBlobs {
 			b1.boxcenterx = ab.boxcenterx;
 			b1.boxcentery = ab.boxcentery;
 
-			b1.velx += lp2 * b1.velx + lp1 * (b1.boxcenterx - b1.pboxcenterx)
+			b1.velx = lp2 * b1.velx + lp1 * (b1.boxcenterx - b1.pboxcenterx)
 					* wr;
 			b1.vely = lp2 * b1.vely + lp1 * (b1.boxcentery - b1.pboxcentery)
 					* hr;
@@ -740,6 +740,11 @@ public class ImageBlobs {
 
 		}
 
+		if (trackedblobs.size() < 1 && idnumbers != 0) { // reset id count
+			idnumbers = 0;
+		}
+
+		
 		return trackedblobs;
 
 	}
@@ -821,6 +826,12 @@ public class ImageBlobs {
 
 		}
 
+		
+		if (trackedblobs.size() < 1 && idnumbers != 0) { // reset id count
+			idnumbers = 0;
+		}
+	
+		
 		return trackedblobs;
 
 	}
@@ -917,7 +928,7 @@ public class ImageBlobs {
 				continue;
 			float dx = ab.cx - prev.cx;
 			float dy = ab.cy - prev.cy;
-			float d2 = dx * dx + dy * dy;
+			float d2 = Math.abs(dx) + Math.abs(dy);//dx * dx + dy * dy;
 			if (d2 < mindist && d2 < mintrackeddist) {
 				mintrackeddist = d2;
 				who = i;
@@ -986,6 +997,7 @@ public class ImageBlobs {
 			ABlob ab = theblobs.get(i);
 			boolean matched = matchblobprevtrackedblobs(ab);
 			if (!matched) {	
+				idnumbers++;
 				TBlob tb = new TBlob(ab);
 				trackedblobs.add(tb);
 				trackednumblobs++;

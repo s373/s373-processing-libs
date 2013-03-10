@@ -37,9 +37,7 @@ public class TBlob extends ABlob{
 	public int presencetime;
 	public boolean linked=false;
 
-	public int pboxcenterx,pboxcentery;
 	public float pcx,pcy;
-
 	public float velx,vely;
 	public float prevelx,prevely;
 	public float maxdist2=Flob.TBlobMaxDistSquared;
@@ -52,7 +50,8 @@ public class TBlob extends ABlob{
 		
 		// ABlob cp sans vel
 		
-		id = ImageBlobs.idnumbers++; //b.id;
+//		id = ImageBlobs.idnumbers++; //b.id;
+		id = ImageBlobs.idnumbers; //b.id;
 		pixelcount = b.pixelcount;
 		boxminx = b.boxminx;
 		boxminy = b.boxminy;
