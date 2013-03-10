@@ -459,6 +459,9 @@ public class ImageBlobs {
 
 		int i = 0, j = 0;
 
+		boolean found = false; // new
+		
+
 		// footleft
 		j = ey;
 		for (i = bx; i < cx; i++) {
@@ -467,18 +470,34 @@ public class ImageBlobs {
 				b.footlefty = j * wcoordsx;
 				// System.out.print("found armleft at "+b.armleftx+" "+b.armlefty
 				// );
+				found = true;
 				break;
 
 			}
 		}
+		
+		if(!found){
+			b.footleftx = b.cx;
+			b.footlefty = b.boxmaxy * wcoordsy;//b->cy;
+		}
+		
+		
+		found = false;	
+	
+		
 		// footright
 		j = ey;
 		for (i = ex - 1; i > cx; i--) {
 			if (testimagemap(i, j)) {
 				b.footrightx = i * wcoordsx;
 				b.footrighty = j * wcoordsy;
+				found = true;
 				break;
 			}
+		}
+		if(!found){
+			b.footleftx = b.cx;
+			b.footlefty = b.boxmaxy * wcoordsy;//b->cy;
 		}
 
 		return b;
@@ -928,7 +947,7 @@ public class ImageBlobs {
 				continue;
 			float dx = ab.cx - prev.cx;
 			float dy = ab.cy - prev.cy;
-			float d2 = Math.abs(dx) + Math.abs(dy);//dx * dx + dy * dy;
+			float d2 = dx * dx + dy * dy;//Math.abs(dx) + Math.abs(dy);//dx * dx + dy * dy;
 			if (d2 < mindist && d2 < mintrackeddist) {
 				mintrackeddist = d2;
 				who = i;
